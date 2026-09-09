@@ -96,6 +96,10 @@
   .btn-save { display: block; text-align: center; background: #2b5cff; color: #fff; text-decoration: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; }
   .btn-copy { display: block; width: 100%; padding: 13px; border: 1px solid #dee0e3; border-radius: 12px; background: #fff; color: #51565d; font-size: 15px; font-weight: 600; cursor: pointer; }
   .save-tip { text-align: center; font-size: 13px; color: #8a8f99; }
+  .contact-box { background: #f5f7ff; border: 1px solid #e0e6ff; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .contact-title { font-size: 13px; color: #51565d; font-weight: 600; }
+  .c-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #d6dae0; border-radius: 10px; font-size: 14px; background: #fff; }
+  .c-input:focus { outline: none; border-color: #2b5cff; }
 </style>
 </head>
 <body data-page-node-id="dkFc1oCzRbIgDa7symsMqM">
@@ -304,6 +308,9 @@
 // 飞书多维表格「表单视图」公开链接（任务②建好后填入；留空则仅显示「复制结果」兜底）
 const FEISHU_FORM_URL = "https://zcn3siebfgca.feishu.cn/share/base/shrcnFK9w20dBR9oJNl69iuqjIP";
 
+// Cloudflare Worker 地址（建桥后填入；留空则保存按钮退回"打开飞书表单"兜底，不自动写库）
+const WORKER_URL = "https://shiny-brook-4cc0.wang849310794.workers.dev";
+
 // ===== 模块定义（与 server.py MODS 一致）=====
 const MODS = {
   "企业实体信息": { keys: ["Q06", "Q07", "Q08", "Q09"], max: 20,
@@ -461,12 +468,25 @@ function renderResultInner(base, raw, missing) {
     </div>
   </div>`;
 
-  // 保存结果（跳飞书表单视图）+ 复制结果兜底
+  // 保存结果（Worker 回传飞书）+ 复制结果兜底
+  const contactBox = (WORKER_URL && WORKER_URL.indexOf("<你的子域>") === -1)
+    ? `<div class="contact-box">
+         <div class="contact-title">留资后顾问可主动联系你（选填）：</div>
+         <input id="c_name" class="c-input" type="text" placeholder="联系人 / 您的称呼">
+         <input id="c_phone" class="c-input" type="text" placeholder="手机号 或 微信号">
+         <select id="c_want" class="c-input">
+           <option value="">是否希望进一步诊断？</option>
+           <option value="是">是，希望进一步诊断</option>
+           <option value="否">暂不需要</option>
+         </select>
+       </div>`
+    : "";
   const save_block = `
   <div class="save-zone">
-    ${FEISHU_FORM_URL
-      ? `<a class="btn-save" href="${FEISHU_FORM_URL}" target="_blank" rel="noopener">📥 保存我的测试结果到企业档案</a>`
-      : `<div class="save-tip">（存档通道配置中，可先复制结果发给顾问）</div>`}
+    ${contactBox}
+    ${WORKER_URL && WORKER_URL.indexOf("<你的子域>") === -1
+      ? `<button class="btn-save" type="button" onclick="saveResult()">📥 保存我的测试结果到企业档案</button>`
+      : `<a class="btn-save" href="${FEISHU_FORM_URL}" target="_blank" rel="noopener">📥 保存我的测试结果到企业档案</a>`}
     <button class="btn-copy" type="button" onclick="copyResult()">📋 复制结果发给顾问</button>
   </div>`;
 
@@ -548,6 +568,8 @@ function handleSubmit(e) {
   result.innerHTML = html;
   result.style.display = "block";
   document.getElementById("form").style.display = "none";
+  // 暂存本次作答，供「保存结果」回传飞书（Worker 读取）
+  window.__GEO_LAST__ = { base: base, raw: raw };
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -568,6 +590,32 @@ function fallbackCopy(txt) {
   catch (e) { alert("复制失败，请手动长按选择文本复制"); }
   document.body.removeChild(ta);
 }
+
+// 保存结果到企业档案（POST 给 Cloudflare Worker -> 写飞书）
+window.saveResult = function () {
+  const last = window.__GEO_LAST__;
+  const btn = document.querySelector(".btn-save");
+  if (!last) { alert("请先完成测试再保存"); return; }
+  const contact = {
+    "联系人": (document.getElementById("c_name") || {}).value || "",
+    "手机号/微信": (document.getElementById("c_phone") || {}).value || "",
+    "是否希望进一步诊断": (document.getElementById("c_want") || {}).value || ""
+  };
+  if (btn) { btn.disabled = true; btn.textContent = "保存中…"; }
+  fetch(WORKER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ base: last.base, answers: last.raw, contact: contact })
+  }).then(function (r) { return r.json(); }).then(function (d) {
+    if (d && d.ok) {
+      if (btn) { btn.textContent = "✅ 已存入企业档案"; btn.style.background = "#2e7d32"; }
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = "保存失败，请点📋复制结果发给顾问"; }
+    }
+  }).catch(function () {
+    if (btn) { btn.disabled = false; btn.textContent = "保存失败，请点📋复制结果发给顾问"; }
+  });
+};
 </script>
 </body>
 </html>
