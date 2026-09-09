@@ -1,0 +1,5 @@
+# 仅保留静态页所需文件，其余不入库（避免把 server.py / cloudflared.exe / 临时脚本推上 GitHub Pages）
+*
+!.gitignore
+!README.md
+!index.html
