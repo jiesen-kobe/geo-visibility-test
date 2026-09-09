@@ -655,7 +655,7 @@ window.saveResult = function () {
   });
 };
 
-// Worker 失败兜底：构造飞书表单预填链接（20题+留资已逐项填好），用户点开检查提交即入库
+// Worker 失败兜底：直接展示「答案速查卡」+ 复制 + 打开飞书表单（裸 URL，不依赖 prefill，因 prefill 部分失效）
 window.fallbackOpenFeishu = function (reason, btn) {
   const last = window.__GEO_LAST__ || {};
   const base = last.base || {};
@@ -665,71 +665,92 @@ window.fallbackOpenFeishu = function (reason, btn) {
     "手机号/微信": (document.getElementById("c_phone") || {}).value || "",
     "是否希望进一步诊断": (document.getElementById("c_want") || {}).value || ""
   };
-  const params = [];
-  function add(name, val) {
-    if (val === undefined || val === null || val === "") return;
-    params.push("prefill_" + name + "=" + encodeURIComponent(String(val)));
-  }
-  add("企业名称", base["企业名称"]);
-  add("品牌名称", base["品牌名称"]);
-  add("企业官网", base["企业官网"]);
-  add("企业主要产品/服务", base["企业主要产品/服务"]);
-  add("所属行业", base["所属行业"]);
-  add("所在城市/主要经营区域", base["所在城市/主要经营区域"]);
-  for (const q in QPRE) {
-    const v = Number(answers[q]);
-    add(QPRE[q], OPT_PRE[v] || OPT_PRE[1]);
-  }
-  add("联系人", contact["联系人"]);
-  add("手机号/微信", contact["手机号/微信"]);
-  add("是否希望进一步诊断", contact["是否希望进一步诊断"]);
-  const sep = FEISHU_FORM_URL.indexOf("?") > -1 ? "&" : "?";
-  const url = FEISHU_FORM_URL + sep + params.join("&");
-  // 1) 按钮变橘色提示
+  // 1) 按钮变橘色
   if (btn) {
     btn.disabled = false;
-    btn.textContent = "已打开飞书表单（答案已预填，检查后点提交）";
+    btn.textContent = "已打开飞书表单（请按下方答案卡对照填入）";
     btn.style.background = "#e07b00";
     btn.style.cursor = "pointer";
-    btn.onclick = function () { window.open(url, "_blank", "noopener"); };
+    btn.onclick = function () { window.open(FEISHU_FORM_URL, "_blank", "noopener"); };
   }
-  // 2) 自动打开（可能被弹窗拦截）
+  // 2) 自动打开飞书表单（裸 URL，避免 prefill 部分失效；可能被弹窗拦截）
   let popupBlocked = false;
   try {
-    const w = window.open(url, "_blank", "noopener");
+    const w = window.open(FEISHU_FORM_URL, "_blank", "noopener");
     if (!w) popupBlocked = true;
   } catch (e) { popupBlocked = true; }
-  // 3) 在按钮下追加可见链接区（避免被弹窗拦截导致用户看不到入口）
+  // 3) 构造答案速查卡（HTML 表格）
+  const rows = [];
+  rows.push(["企业名称", escHtml(base["企业名称"] || "")]);
+  rows.push(["品牌名称", escHtml(base["品牌名称"] || "")]);
+  rows.push(["企业官网", escHtml(base["企业官网"] || "")]);
+  rows.push(["企业主要产品/服务", escHtml(base["企业主要产品/服务"] || "")]);
+  rows.push(["所属行业", escHtml(base["所属行业"] || "")]);
+  rows.push(["所在城市/主要经营区域", escHtml(base["所在城市/主要经营区域"] || "")]);
+  // 20 道题
+  for (const q in QPRE) {
+    const v = Number(answers[q]);
+    rows.push([escHtml(QPRE[q]), escHtml(OPT_PRE[v] || OPT_PRE[1])]);
+  }
+  rows.push(["联系人", escHtml(contact["联系人"] || "")]);
+  rows.push(["手机号/微信", escHtml(contact["手机号/微信"] || "")]);
+  rows.push(["是否希望进一步诊断", escHtml(contact["是否希望进一步诊断"] || "")]);
+  // 转成「可粘贴」文本（tab 分隔，飞书表单支持直接粘贴到对应字段；但推荐对照填）
+  const tsv = rows.map(r => r.join("\t")).join("\n");
+  // 4) 注入答案速查区
   let extra = document.getElementById("fallback-link-zone");
   if (!extra) {
     extra = document.createElement("div");
     extra.id = "fallback-link-zone";
-    extra.style.cssText = "margin-top:10px;padding:12px;border:1px dashed #e07b00;border-radius:10px;background:#fff7ec;font-size:14px;color:#5a3a00;text-align:left;";
+    extra.style.cssText = "margin-top:12px;padding:14px;border:1px dashed #e07b00;border-radius:10px;background:#fff7ec;color:#5a3a00;text-align:left;";
     if (btn && btn.parentNode) btn.parentNode.insertBefore(extra, btn.nextSibling);
     else document.body.appendChild(extra);
   }
+  // 表格 HTML
+  const tbl = "<table style=\"width:100%;border-collapse:collapse;font-size:13px;\">" +
+    rows.map(r => "<tr><td style=\"padding:5px 8px;border-bottom:1px solid #f0d7a8;color:#5a3a00;width:55%;font-weight:600;\">" + r[0] +
+    "</td><td style=\"padding:5px 8px;border-bottom:1px solid #f0d7a8;color:#222;\">" + (r[1] || "<span style=\"color:#999\">（未填）</span>") + "</td></tr>").join("") +
+    "</table>";
   extra.innerHTML =
-    "<div style=\"margin-bottom:6px;\"><b>👇 没看到弹出的表单？点这里手动打开（已预填答案）</b></div>" +
-    "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block;background:#e07b00;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;\">📝 打开预填好的飞书表单</a>" +
-    "<button type=\"button\" id=\"copy-prefill-btn\" style=\"margin-left:8px;background:#fff;color:#e07b00;border:1px solid #e07b00;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;\">📋 复制链接</button>" +
-    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + (popupBlocked ? "（浏览器拦截了自动弹窗，请用上面的按钮手动打开）" : "") + "</div>";
-  const copyBtn = document.getElementById("copy-prefill-btn");
+    "<div style=\"margin-bottom:8px;\"><b>📋 答案速查卡（自动打开的飞书表单可能未预填，请对照下方填写，约 1 分钟）</b></div>" +
+    "<div style=\"max-height:260px;overflow:auto;background:#fff;border:1px solid #f0d7a8;border-radius:8px;padding:6px;\">" + tbl + "</div>" +
+    "<div style=\"margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;\">" +
+      "<button type=\"button\" id=\"copy-all-btn\" style=\"background:#fff;color:#e07b00;border:1px solid #e07b00;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;\">📋 复制全部答案（TSV）</button>" +
+      "<a href=\"" + FEISHU_FORM_URL + "\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block;background:#e07b00;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;\">📝 打开飞书表单</a>" +
+    "</div>" +
+    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + (popupBlocked ? "（浏览器拦截了自动弹窗，请用上面的按钮手动打开表单）" : "") + "</div>";
+  // 5) 复制 TSV
+  const copyBtn = document.getElementById("copy-all-btn");
   if (copyBtn) {
     copyBtn.onclick = function () {
-      try {
-        navigator.clipboard.writeText(url).then(function(){
-          copyBtn.textContent = "✅ 已复制";
-          setTimeout(function(){ copyBtn.textContent = "📋 复制链接"; }, 1500);
-        });
-      } catch (e) {
-        // 兜底：选中文本让用户手动复制
-        const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select();
-        try { document.execCommand("copy"); copyBtn.textContent = "✅ 已复制"; } catch(_) {}
-        document.body.removeChild(ta);
-      }
+      copyText(tsv, copyBtn);
     };
   }
 };
+// 工具：HTML 转义
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+// 工具：复制文本
+function copyText(text, btn) {
+  function ok() { btn.textContent = "✅ 已复制"; setTimeout(function(){ btn.textContent = "📋 复制全部答案（TSV）"; }, 1500); }
+  function fail() { btn.textContent = "❌ 复制失败，请长按选择文本"; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok).catch(function(){
+      const ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed";ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); ok(); } catch(_) { fail(); }
+      document.body.removeChild(ta);
+    });
+  } else {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); ok(); } catch(_) { fail(); }
+    document.body.removeChild(ta);
+  }
+}
 </script>
 </body>
 </html>
