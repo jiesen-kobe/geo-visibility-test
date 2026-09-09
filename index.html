@@ -508,7 +508,7 @@ function renderResultInner(base, raw, missing) {
     ${contactBox}
     ${WORKER_URL && WORKER_URL.indexOf("<你的子域>") === -1
       ? `<button class="btn-save" type="button" onclick="saveResult()">📥 保存我的测试结果到企业档案</button>`
-      : `<a class="btn-save" href="${FEISHU_FORM_URL}" target="_blank" rel="noopener">📥 保存我的测试结果到企业档案</a>`}
+      : `<button class="btn-save" type="button" onclick="copyResult()" title="暂未对接自动归档，请通过复制结果发给顾问建档">📥 复制结果给顾问建档</button>`}
     <button class="btn-copy" type="button" onclick="copyResult()">📋 复制结果发给顾问</button>
   </div>`;
 
@@ -798,7 +798,8 @@ window.saveResult = function () {
   });
 };
 
-// Worker 失败兜底：直接展示「答案速查卡」+ 复制 + 打开飞书表单（裸 URL，不依赖 prefill，因 prefill 部分失效）
+// Worker 失败兜底：不再跳转飞书表单（V0.2 旧版题目与 V0.29 算分口径不一致，会让用户答两遍）。
+// 改为直接展示「答案速查卡」+ 复制结果给顾问建档。
 window.fallbackOpenFeishu = function (reason, btn) {
   const last = window.__GEO_LAST__ || {};
   const base = last.base || {};
@@ -808,20 +809,16 @@ window.fallbackOpenFeishu = function (reason, btn) {
     "手机号/微信": (document.getElementById("c_phone") || {}).value || "",
     "是否希望进一步诊断": (document.getElementById("c_want") || {}).value || ""
   };
-  // 1) 按钮变橘色
+  // 1) 按钮变蓝色（提示：请点击复制结果，而不是再去飞书再答一遍）
   if (btn) {
     btn.disabled = false;
-    btn.textContent = "已打开飞书表单（请按下方答案卡对照填入）";
-    btn.style.background = "#e07b00";
+    btn.textContent = "📋 请把下方结果复制发给顾问建档";
+    btn.style.background = "#2b5cff";
     btn.style.cursor = "pointer";
-    btn.onclick = function () { window.open(FEISHU_FORM_URL, "_blank", "noopener"); };
+    btn.onclick = function () { copyResult(); };
   }
-  // 2) 自动打开飞书表单（裸 URL，避免 prefill 部分失效；可能被弹窗拦截）
+  // 2) 移除自动跳转飞书表单的逻辑（旧版会让用户被迫答两遍）
   let popupBlocked = false;
-  try {
-    const w = window.open(FEISHU_FORM_URL, "_blank", "noopener");
-    if (!w) popupBlocked = true;
-  } catch (e) { popupBlocked = true; }
   // 3) 构造答案速查卡（HTML 表格）
   const rows = [];
   rows.push(["企业名称", escHtml(base["企业名称"] || "")]);
@@ -855,18 +852,24 @@ window.fallbackOpenFeishu = function (reason, btn) {
     "</td><td style=\"padding:5px 8px;border-bottom:1px solid #f0d7a8;color:#222;\">" + (r[1] || "<span style=\"color:#999\">（未填）</span>") + "</td></tr>").join("") +
     "</table>";
   extra.innerHTML =
-    "<div style=\"margin-bottom:8px;\"><b>📋 答案速查卡（自动打开的飞书表单可能未预填，请对照下方填写，约 1 分钟）</b></div>" +
+    "<div style=\"margin-bottom:8px;\"><b>📋 答案速查卡（请把以下答案复制给顾问，由顾问为你建档，1 分钟搞定）</b></div>" +
     "<div style=\"max-height:260px;overflow:auto;background:#fff;border:1px solid #f0d7a8;border-radius:8px;padding:6px;\">" + tbl + "</div>" +
     "<div style=\"margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;\">" +
       "<button type=\"button\" id=\"copy-all-btn\" style=\"background:#fff;color:#e07b00;border:1px solid #e07b00;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;\">📋 复制全部答案（TSV）</button>" +
-      "<a href=\"" + FEISHU_FORM_URL + "\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block;background:#e07b00;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;\">📝 打开飞书表单</a>" +
+      "<button type=\"button\" id=\"copy-result-btn\" style=\"background:#e07b00;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700;\">📥 复制结果给顾问</button>" +
     "</div>" +
-    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + (popupBlocked ? "（浏览器拦截了自动弹窗，请用上面的按钮手动打开表单）" : "") + "</div>";
+    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + "（自动归档通道暂未打通，请通过「复制结果给顾问」由顾问帮你建档）</div>";
   // 5) 复制 TSV
   const copyBtn = document.getElementById("copy-all-btn");
   if (copyBtn) {
     copyBtn.onclick = function () {
       copyText(tsv, copyBtn);
+    };
+  }
+  const copyResultBtn = document.getElementById("copy-result-btn");
+  if (copyResultBtn) {
+    copyResultBtn.onclick = function () {
+      try { copyResult(); } catch (_) {}
     };
   }
 };
