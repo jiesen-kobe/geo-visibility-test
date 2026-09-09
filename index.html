@@ -685,9 +685,50 @@ window.fallbackOpenFeishu = function (reason, btn) {
   add("是否希望进一步诊断", contact["是否希望进一步诊断"]);
   const sep = FEISHU_FORM_URL.indexOf("?") > -1 ? "&" : "?";
   const url = FEISHU_FORM_URL + sep + params.join("&");
-  if (btn) { btn.disabled = false; btn.textContent = "已打开飞书表单（答案已预填，检查后点提交）"; btn.style.background = "#e07b00"; }
-  try { window.open(url, "_blank", "noopener"); } catch (e) {}
-  alert("网络不稳定，Worker 没收到。\n已自动打开飞书表单，20题+留资已全部预填好，检查一遍直接点「提交」即可入库。\n\n原因：" + reason);
+  // 1) 按钮变橘色提示
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = "已打开飞书表单（答案已预填，检查后点提交）";
+    btn.style.background = "#e07b00";
+    btn.style.cursor = "pointer";
+    btn.onclick = function () { window.open(url, "_blank", "noopener"); };
+  }
+  // 2) 自动打开（可能被弹窗拦截）
+  let popupBlocked = false;
+  try {
+    const w = window.open(url, "_blank", "noopener");
+    if (!w) popupBlocked = true;
+  } catch (e) { popupBlocked = true; }
+  // 3) 在按钮下追加可见链接区（避免被弹窗拦截导致用户看不到入口）
+  let extra = document.getElementById("fallback-link-zone");
+  if (!extra) {
+    extra = document.createElement("div");
+    extra.id = "fallback-link-zone";
+    extra.style.cssText = "margin-top:10px;padding:12px;border:1px dashed #e07b00;border-radius:10px;background:#fff7ec;font-size:14px;color:#5a3a00;text-align:left;";
+    if (btn && btn.parentNode) btn.parentNode.insertBefore(extra, btn.nextSibling);
+    else document.body.appendChild(extra);
+  }
+  extra.innerHTML =
+    "<div style=\"margin-bottom:6px;\"><b>👇 没看到弹出的表单？点这里手动打开（已预填答案）</b></div>" +
+    "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block;background:#e07b00;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;\">📝 打开预填好的飞书表单</a>" +
+    "<button type=\"button\" id=\"copy-prefill-btn\" style=\"margin-left:8px;background:#fff;color:#e07b00;border:1px solid #e07b00;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;\">📋 复制链接</button>" +
+    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + (popupBlocked ? "（浏览器拦截了自动弹窗，请用上面的按钮手动打开）" : "") + "</div>";
+  const copyBtn = document.getElementById("copy-prefill-btn");
+  if (copyBtn) {
+    copyBtn.onclick = function () {
+      try {
+        navigator.clipboard.writeText(url).then(function(){
+          copyBtn.textContent = "✅ 已复制";
+          setTimeout(function(){ copyBtn.textContent = "📋 复制链接"; }, 1500);
+        });
+      } catch (e) {
+        // 兜底：选中文本让用户手动复制
+        const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); copyBtn.textContent = "✅ 已复制"; } catch(_) {}
+        document.body.removeChild(ta);
+      }
+    };
+  }
 };
 </script>
 </body>
