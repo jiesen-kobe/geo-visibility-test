@@ -603,10 +603,16 @@ window.saveResult = function () {
   };
   if (btn) { btn.disabled = true; btn.textContent = "保存中…"; }
   // 不走 JSON (会触发 CORS preflight)，改成 text/plain 简化请求
+  const payload = JSON.stringify({ base: last.base, answers: last.raw, contact: contact });
+  // 先把数据写到剪贴板，万一 Worker 失败用户可粘到飞书表单
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(payload).catch(function(){});
+  }
   fetch(WORKER_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ base: last.base, answers: last.raw, contact: contact })
+    body: payload,
+    keepalive: true
   }).then(function (r) {
     return r.text().then(function (txt) {
       let d = null;
@@ -615,12 +621,22 @@ window.saveResult = function () {
         if (btn) { btn.textContent = "✅ 已存入企业档案"; btn.style.background = "#2e7d32"; }
       } else {
         const reason = d ? ("[" + (d.msg||"") + "]") : ("[" + r.status + " " + (txt||"").slice(0,80) + "]");
-        if (btn) { btn.disabled = false; btn.textContent = "保存失败 " + reason; }
+        fallbackOpenFeishu(reason, btn);
       }
     });
   }).catch(function (e) {
-    if (btn) { btn.disabled = false; btn.textContent = "保存失败 [网络/CORS] " + (e.message || e); }
+    fallbackOpenFeishu("[网络中断] " + (e.message || e), btn);
   });
+};
+
+// Worker 失败兜底：自动打开飞书表单 + 把 JSON 复制进剪贴板
+window.fallbackOpenFeishu = function (reason, btn) {
+  // 提示用户 + 打开飞书表单
+  const msg = "网络不稳定，Worker 没收到，自动打开了飞书表单\n请在表单正文粘一下剪贴板里的 JSON 数据（已复制）\n\n原因：" + reason;
+  if (btn) { btn.disabled = false; btn.textContent = "已打开飞书表单（请粘贴剪贴板）"; btn.style.background = "#e07b00"; }
+  // 打开飞书表单
+  try { window.open(FEISHU_FORM_URL, "_blank", "noopener"); } catch(e) {}
+  alert(msg);
 };
 </script>
 </body>
