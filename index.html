@@ -602,18 +602,24 @@ window.saveResult = function () {
     "是否希望进一步诊断": (document.getElementById("c_want") || {}).value || ""
   };
   if (btn) { btn.disabled = true; btn.textContent = "保存中…"; }
+  // 不走 JSON (会触发 CORS preflight)，改成 text/plain 简化请求
   fetch(WORKER_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ base: last.base, answers: last.raw, contact: contact })
-  }).then(function (r) { return r.json(); }).then(function (d) {
-    if (d && d.ok) {
-      if (btn) { btn.textContent = "✅ 已存入企业档案"; btn.style.background = "#2e7d32"; }
-    } else {
-      if (btn) { btn.disabled = false; btn.textContent = "保存失败，请点📋复制结果发给顾问"; }
-    }
-  }).catch(function () {
-    if (btn) { btn.disabled = false; btn.textContent = "保存失败，请点📋复制结果发给顾问"; }
+  }).then(function (r) {
+    return r.text().then(function (txt) {
+      let d = null;
+      try { d = JSON.parse(txt); } catch (e) {}
+      if (r.ok && d && d.ok) {
+        if (btn) { btn.textContent = "✅ 已存入企业档案"; btn.style.background = "#2e7d32"; }
+      } else {
+        const reason = d ? ("[" + (d.msg||"") + "]") : ("[" + r.status + " " + (txt||"").slice(0,80) + "]");
+        if (btn) { btn.disabled = false; btn.textContent = "保存失败 " + reason; }
+      }
+    });
+  }).catch(function (e) {
+    if (btn) { btn.disabled = false; btn.textContent = "保存失败 [网络/CORS] " + (e.message || e); }
   });
 };
 </script>
