@@ -94,7 +94,6 @@
   .wx-tip { font-size: 12px; color: #9a5b00; margin-bottom: 12px; }
   .save-zone { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
   .btn-save { display: block; text-align: center; background: #2b5cff; color: #fff; text-decoration: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; }
-  .btn-copy { display: block; width: 100%; padding: 13px; border: 1px solid #dee0e3; border-radius: 12px; background: #fff; color: #51565d; font-size: 15px; font-weight: 600; cursor: pointer; }
   .save-tip { text-align: center; font-size: 13px; color: #8a8f99; }
   .contact-box { background: #f5f7ff; border: 1px solid #e0e6ff; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
   .contact-title { font-size: 13px; color: #51565d; font-weight: 600; }
@@ -508,8 +507,7 @@ function renderResultInner(base, raw, missing) {
     ${contactBox}
     ${WORKER_URL && WORKER_URL.indexOf("<你的子域>") === -1
       ? `<button class="btn-save" type="button" onclick="saveResult()">📥 保存我的测试结果到企业档案</button>`
-      : `<button class="btn-save" type="button" onclick="copyResult()" title="暂未对接自动归档，请通过复制结果发给顾问建档">📥 复制结果给顾问建档</button>`}
-    <button class="btn-copy" type="button" onclick="copyResult()">📋 复制结果发给顾问</button>
+      : `<button class="btn-save" type="button" onclick="copyResult()" title="暂未对接自动归档，请通过复制结果发给顾问建档">📋 复制结果发给顾问建档</button>`}
   </div>`;
 
   return `
@@ -856,20 +854,13 @@ window.fallbackOpenFeishu = function (reason, btn) {
     "<div style=\"max-height:260px;overflow:auto;background:#fff;border:1px solid #f0d7a8;border-radius:8px;padding:6px;\">" + tbl + "</div>" +
     "<div style=\"margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;\">" +
       "<button type=\"button\" id=\"copy-all-btn\" style=\"background:#fff;color:#e07b00;border:1px solid #e07b00;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;\">📋 复制全部答案（TSV）</button>" +
-      "<button type=\"button\" id=\"copy-result-btn\" style=\"background:#e07b00;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700;\">📥 复制结果给顾问</button>" +
     "</div>" +
-    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + "（自动归档通道暂未打通，请通过「复制结果给顾问」由顾问帮你建档）</div>";
+    "<div style=\"margin-top:8px;color:#7a5a00;font-size:12px;\">原因：" + reason + "（自动归档通道暂未打通，请通过上方「复制结果给顾问」由顾问帮你建档）</div>";
   // 5) 复制 TSV
   const copyBtn = document.getElementById("copy-all-btn");
   if (copyBtn) {
     copyBtn.onclick = function () {
       copyText(tsv, copyBtn);
-    };
-  }
-  const copyResultBtn = document.getElementById("copy-result-btn");
-  if (copyResultBtn) {
-    copyResultBtn.onclick = function () {
-      try { copyResult(); } catch (_) {}
     };
   }
 };
