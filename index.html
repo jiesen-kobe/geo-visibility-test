@@ -100,6 +100,28 @@
   .contact-title { font-size: 13px; color: #51565d; font-weight: 600; }
   .c-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #d6dae0; border-radius: 10px; font-size: 14px; background: #fff; }
   .c-input:focus { outline: none; border-color: #2b5cff; }
+
+  /* 上次结果卡片（localStorage 回看） */
+  .last-card {
+    background: #fff; border: 1px solid #e0e6ff; border-radius: 14px;
+    padding: 16px 20px; margin-top: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  }
+  .last-title { font-size: 14px; color: #51565d; margin-bottom: 6px; }
+  .last-score { font-size: 18px; font-weight: 700; color: #2b5cff; margin-bottom: 12px; }
+  .last-actions { display: flex; gap: 10px; }
+  .last-actions .btn { margin-top: 0; flex: 1; padding: 12px; font-size: 15px; }
+  .btn-secondary {
+    flex: 1; padding: 12px; border: 1px solid #dee0e3;
+    border-radius: 12px; background: #fff; color: #51565d;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn-link {
+    display: block; width: 100%; padding: 13px; border: 1px solid #2b5cff;
+    border-radius: 12px; background: #fff; color: #2b5cff;
+    font-size: 15px; font-weight: 600; cursor: pointer; text-align: center;
+    text-decoration: none; box-sizing: border-box; margin-top: 18px;
+  }
 </style>
 </head>
 <body data-page-node-id="dkFc1oCzRbIgDa7symsMqM">
@@ -510,6 +532,127 @@ function renderResultInner(base, raw, missing) {
     <div class="foot">本测试衡量企业当前的 AI 搜索可见度基础成熟度，不等同于 AI 收录或推荐结果</div>
   `;
 }
+
+// ===== 回看机制：localStorage + URL 编码（C 方案：两者都加） =====
+const STORE_KEY = 'geo_last_v1';
+
+function saveLocal(state) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function loadLocal() {
+  try { const s = localStorage.getItem(STORE_KEY); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+}
+function clearLocal() {
+  try { localStorage.removeItem(STORE_KEY); } catch(e) {}
+}
+function fmtTimeAgo(ts) {
+  const d = Math.floor((Date.now() - ts) / 60000);
+  if (d < 1) return '刚刚';
+  if (d < 60) return d + ' 分钟前';
+  const h = Math.floor(d / 60);
+  if (h < 24) return h + ' 小时前';
+  const dy = Math.floor(h / 24);
+  if (dy < 30) return dy + ' 天前';
+  return new Date(ts).toLocaleDateString('zh-CN');
+}
+function encodeAnswers(raw) {
+  const out = [];
+  for (let i = 6; i <= 25; i++) {
+    const q = 'Q' + String(i).padStart(2, '0');
+    out.push(Number(raw[q]) || 0);
+  }
+  return out.join(',');
+}
+function decodeAnswers(str) {
+  const raw = {}; const arr = str.split(','); let idx = 0;
+  for (let i = 6; i <= 25; i++) {
+    const q = 'Q' + String(i).padStart(2, '0');
+    const n = Number(arr[idx]);
+    raw[q] = (n >= 1 && n <= 5) ? n : 0;
+    idx++;
+  }
+  return raw;
+}
+function encodeBase(b) {
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(b)))); } catch(e) { return ''; }
+}
+function decodeBase(s) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch(e) { return {}; }
+}
+function updateUrlWithResult(base, raw) {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', encodeAnswers(raw));
+    const eb = encodeBase(base);
+    if (eb) url.searchParams.set('b', eb);
+    window.history.replaceState(null, '', url.toString());
+  } catch(e) {}
+}
+function parseUrlState() {
+  const sp = new URLSearchParams(window.location.search);
+  if (!sp.has('q')) return null;
+  const q = sp.get('q') || ''; if (!q) return null;
+  const raw = decodeAnswers(q);
+  const base = sp.has('b') ? decodeBase(sp.get('b')) : {};
+  return { base, raw, missing: [] };
+}
+function showResult(base, raw, missing) {
+  const html = window.GEO.renderResultInner(base, raw, missing);
+  const result = document.getElementById('result');
+  result.innerHTML = html;
+  result.style.display = 'block';
+  document.getElementById('form').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showLastResultCard(state) {
+  const card = document.createElement('div');
+  card.className = 'card last-card'; card.id = 'lastCard';
+  const ago = fmtTimeAgo(state.ts || Date.now());
+  card.innerHTML =
+    '<div class="last-title">📌 你上次测试结果（' + ago + '）</div>' +
+    '<div class="last-score">' + (Number(state.score)||0) + ' 分 · ' + esc(state.level||'') + '</div>' +
+    '<div class="last-actions">' +
+      '<button type="button" class="btn" onclick="viewLastResult()">查看上次结果</button>' +
+      '<button type="button" class="btn-secondary" onclick="clearLastResult()">清空记录</button>' +
+    '</div>';
+  const form = document.getElementById('form');
+  if (form && form.parentNode) form.parentNode.insertBefore(card, form);
+}
+window.viewLastResult = function() {
+  const state = loadLocal();
+  if (!state) { alert('暂无历史记录'); return; }
+  showResult(state.base, state.raw, []);
+  const c = document.getElementById('lastCard'); if (c) c.style.display = 'none';
+};
+window.clearLastResult = function() {
+  if (!confirm('确认清空本地历史记录？')) return;
+  clearLocal();
+  const c = document.getElementById('lastCard'); if (c) c.remove();
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('q'); url.searchParams.delete('b');
+    window.history.replaceState(null, '', url.toString());
+  } catch(e) {}
+};
+window.resetAndReload = function() {
+  if (!confirm('开始新一轮测试？\n本次将清空本地历史记录。')) return;
+  clearLocal();
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('q'); url.searchParams.delete('b');
+    window.history.replaceState(null, '', url.toString());
+  } catch(e) {}
+  location.reload();
+};
+window.copyResultUrl = function() {
+  const url = window.location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function(){ alert('已复制当前结果链接，发给自己或顾问即可永久回看'); })
+      .catch(function(){ fallbackCopy(url); });
+  } else {
+    fallbackCopy(url);
+  }
+};
 
 // 暴露到全局（index.html 的 inline script 调用）
 window.GEO = { calcScore, renderResultInner, MODS };
