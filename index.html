@@ -591,6 +591,32 @@ function fallbackCopy(txt) {
   document.body.removeChild(ta);
 }
 
+// 题号 -> 飞书字段名（与底表字段名一致，用于预填链接参数 prefill_[字段名]）
+const QPRE = {
+  "Q06": "企业是否有清晰、统一的企业介绍",
+  "Q07": "企业在不同互联网平台上的名称和基本信息是否统一",
+  "Q08": "企业是否拥有比较完整的线上公开信息",
+  "Q09": "企业是否有清晰的品牌-企业主体-产品关系",
+  "Q10": "核心产品是否有完整、标准化的产品介绍",
+  "Q11": "产品是否明确说明适合哪些客户和使用场景",
+  "Q12": "产品是否拥有比较完整的参数、功能、优势等信息",
+  "Q13": "企业是否拥有真实客户案例或应用案例",
+  "Q14": "企业是否持续发布行业相关内容",
+  "Q15": "企业是否持续发布产品或解决方案内容",
+  "Q16": "企业是否拥有专业的行业知识或经验内容",
+  "Q17": "企业是否拥有比较完整的FAQ问答内容",
+  "Q18": "企业重要信息是否以清晰、结构化的文字形式存在",
+  "Q19": "产品信息是否能够直接回答客户常见问题",
+  "Q20": "企业官网和公开内容是否容易被搜索和检索",
+  "Q21": "企业是否拥有足够的第三方平台信息支持品牌可信度",
+  "Q22": "企业是否主动在AI平台搜索过自己的企业",
+  "Q23": "AI能否准确介绍你的企业",
+  "Q24": "AI能否准确描述企业的核心产品",
+  "Q25": "在「行业供应商/品牌选择」类提问中企业是否有机会被AI提及"
+};
+// 分数 -> 飞书单选选项文本
+const OPT_PRE = {1:"1 完全没有",2:"2 刚开始建设",3:"3 基本具备",4:"4 比较完善",5:"5 已经系统化"};
+
 // 保存结果到企业档案（POST 给 Cloudflare Worker -> 写飞书）
 window.saveResult = function () {
   const last = window.__GEO_LAST__;
@@ -629,14 +655,39 @@ window.saveResult = function () {
   });
 };
 
-// Worker 失败兜底：自动打开飞书表单 + 把 JSON 复制进剪贴板
+// Worker 失败兜底：构造飞书表单预填链接（20题+留资已逐项填好），用户点开检查提交即入库
 window.fallbackOpenFeishu = function (reason, btn) {
-  // 提示用户 + 打开飞书表单
-  const msg = "网络不稳定，Worker 没收到，自动打开了飞书表单\n请在表单正文粘一下剪贴板里的 JSON 数据（已复制）\n\n原因：" + reason;
-  if (btn) { btn.disabled = false; btn.textContent = "已打开飞书表单（请粘贴剪贴板）"; btn.style.background = "#e07b00"; }
-  // 打开飞书表单
-  try { window.open(FEISHU_FORM_URL, "_blank", "noopener"); } catch(e) {}
-  alert(msg);
+  const last = window.__GEO_LAST__ || {};
+  const base = last.base || {};
+  const answers = last.raw || {};
+  const contact = {
+    "联系人": (document.getElementById("c_name") || {}).value || "",
+    "手机号/微信": (document.getElementById("c_phone") || {}).value || "",
+    "是否希望进一步诊断": (document.getElementById("c_want") || {}).value || ""
+  };
+  const params = [];
+  function add(name, val) {
+    if (val === undefined || val === null || val === "") return;
+    params.push("prefill_" + name + "=" + encodeURIComponent(String(val)));
+  }
+  add("企业名称", base["企业名称"]);
+  add("品牌名称", base["品牌名称"]);
+  add("企业官网", base["企业官网"]);
+  add("企业主要产品/服务", base["企业主要产品/服务"]);
+  add("所属行业", base["所属行业"]);
+  add("所在城市/主要经营区域", base["所在城市/主要经营区域"]);
+  for (const q in QPRE) {
+    const v = Number(answers[q]);
+    add(QPRE[q], OPT_PRE[v] || OPT_PRE[1]);
+  }
+  add("联系人", contact["联系人"]);
+  add("手机号/微信", contact["手机号/微信"]);
+  add("是否希望进一步诊断", contact["是否希望进一步诊断"]);
+  const sep = FEISHU_FORM_URL.indexOf("?") > -1 ? "&" : "?";
+  const url = FEISHU_FORM_URL + sep + params.join("&");
+  if (btn) { btn.disabled = false; btn.textContent = "已打开飞书表单（答案已预填，检查后点提交）"; btn.style.background = "#e07b00"; }
+  try { window.open(url, "_blank", "noopener"); } catch (e) {}
+  alert("网络不稳定，Worker 没收到。\n已自动打开飞书表单，20题+留资已全部预填好，检查一遍直接点「提交」即可入库。\n\n原因：" + reason);
 };
 </script>
 </body>
