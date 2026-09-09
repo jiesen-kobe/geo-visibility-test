@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="Du6QAPYJUyCPjaWYVzWtuF">
+<head data-page-node-id="bUfDT7fXFUjnRr31Uw6oKB">
+<meta charset="UTF-8" data-page-node-id="NheE7vC9TizUZ3lVXmztEv">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="kND1aIP6bFQwzMzvOZP4mA">
+<title>免费测测：AI认识你的企业吗？</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f6f8; color: #1f2329; line-height: 1.6;
+    padding: 0 0 60px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+  .hero {
+    background: linear-gradient(135deg, #2b5cff 0%, #1a3ec0 100%);
+    color: #fff; padding: 40px 20px 32px; text-align: center;
+    border-radius: 0 0 24px 24px;
+  }
+  .hero h1 { font-size: 24px; font-weight: 700; letter-spacing: .5px; }
+  .hero p { font-size: 14px; opacity: .9; margin-top: 10px; }
+  .card {
+    background: #fff; border-radius: 14px; padding: 22px 20px;
+    margin-top: 18px; box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  }
+  .sec-title {
+    font-size: 16px; font-weight: 700; color: #2b5cff;
+    margin: 26px 0 14px; padding-left: 10px; border-left: 4px solid #2b5cff;
+  }
+  .q { margin-bottom: 22px; }
+  .q-label { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .q-desc { font-size: 12.5px; color: #8a8f99; margin-bottom: 10px; }
+  .q-req { color: #f5483b; font-size: 12px; margin-left: 4px; }
+  input[type=text], textarea, select {
+    width: 100%; padding: 11px 12px; border: 1px solid #dee0e3;
+    border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical;
+  }
+  textarea { min-height: 60px; }
+  .opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .opt {
+    border: 1px solid #dee0e3; border-radius: 8px; padding: 10px 4px;
+    text-align: center; font-size: 12px; cursor: pointer; transition: .15s;
+    background: #fafbfc; position: relative; user-select: none;
+  }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt:hover { border-color: #2b5cff; }
+  .opt:has(input:checked) { background: #2b5cff; color: #fff; border-color: #2b5cff; }
+  .opt:has(input:checked) b { color: #fff; }
+  .opt b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .err { color: #f5483b; font-size: 12px; margin-top: 6px; display: none; }
+  .q-pre-cta { text-align:center; font-size:13px; color:#51565d; margin-top:10px; padding:10px 14px; background:#f7faff; border-radius:10px; }
+  .q-pre-cta b { color:#2b5cff; font-weight:700; }
+  .btn {
+    display: block; width: 100%; padding: 15px; border: none; border-radius: 12px;
+    background: #2b5cff; color: #fff; font-size: 17px; font-weight: 700;
+    cursor: pointer; margin-top: 28px; transition: .15s; text-align: center;
+    text-decoration: none;
+  }
+  .btn:active { transform: scale(.99); }
+  .foot { text-align: center; font-size: 12px; color: #a3a8b0; margin-top: 24px; }
+
+  /* 结果页（复刻 server.py render_result_html 样式） */
+  #result { display: none; }
+  .score-big {
+    text-align: center; padding: 30px 20px;
+    background: linear-gradient(135deg, #2b5cff, #1a3ec0); color: #fff;
+    border-radius: 16px;
+  }
+  .score-big .num { font-size: 64px; font-weight: 800; line-height: 1; }
+  .score-big .lv { font-size: 20px; font-weight: 700; margin-top: 10px; }
+  .score-big .sub { font-size: 13px; opacity: .9; margin-top: 8px; }
+  .mod { display: flex; align-items: center; gap: 10px; padding: 9px 0; }
+  .mod .mn { width: 96px; font-size: 14px; flex: none; }
+  .mod .mbar { flex: 1; height: 10px; background: #eef1f6; border-radius: 6px; overflow: hidden; }
+  .mod .mbar span { display: block; height: 100%; background: #2b5cff; border-radius: 6px; }
+  .mod .mv { width: 54px; text-align: right; font-size: 14px; font-weight: 600; flex: none; }
+  .mod.hl-good .mv { color: #1f9d55; }
+  .mod.hl-bad .mv { color: #e0533d; }
+  .note { background: #f6f8fc; border-radius: 10px; padding: 12px 14px; font-size: 14px; color: #2b3346; line-height: 1.7; }
+  .warn { background: #fff5ec; border: 1px solid #ffd9a8; color: #9a5b00; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin: 14px 0; }
+  .lead-block { background: linear-gradient(135deg,#fff7e6,#ffe7c2); border: 1px solid #ffd591; border-radius: 14px; padding: 18px; margin-top: 24px; }
+  .cta5-t1 { font-size: 17px; font-weight: 700; color: #7a4f01; margin-bottom: 10px; line-height: 1.45; }
+  .cta5-t2 { font-size: 13px; color: #7a4f01; margin-bottom: 10px; line-height: 1.7; }
+  .cta5-list { background: rgba(255,255,255,.6); border-radius: 10px; padding: 12px 14px 12px 30px; margin-bottom: 14px; }
+  .cta5-list li { font-size: 13px; color: #7a4f01; line-height: 1.9; }
+  .cta5-prod { background: #fff; border: 1px solid #ffd591; border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 14px; }
+  .cta5-prod-name { font-size: 16px; font-weight: 700; color: #d46b08; }
+  .cta5-price { font-size: 22px; font-weight: 800; color: #e0533d; margin: 6px 0; }
+  .cta5-desc { font-size: 12.5px; color: #7a4f01; line-height: 1.6; }
+  .cta5-btn { display: block; text-align: center; background: linear-gradient(135deg,#fa8c16,#d46b08); color: #fff; text-decoration: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; box-shadow: 0 4px 12px rgba(214,107,8,.28); }
+  .wx-zone { background: #fff; border: 1px dashed #ffb74d; border-radius: 12px; padding: 16px; margin-top: 14px; text-align: center; }
+  .wx-t { font-size: 14px; font-weight: 700; color: #d46b08; margin-bottom: 8px; }
+  .wx-id { font-size: 24px; font-weight: 800; color: #1d2330; letter-spacing: 1px; background: #f7faff; border-radius: 8px; padding: 10px; margin-bottom: 8px; -webkit-user-select: all; user-select: all; }
+  .wx-tip { font-size: 12px; color: #9a5b00; margin-bottom: 12px; }
+  .save-zone { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .btn-save { display: block; text-align: center; background: #2b5cff; color: #fff; text-decoration: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; }
+  .btn-copy { display: block; width: 100%; padding: 13px; border: 1px solid #dee0e3; border-radius: 12px; background: #fff; color: #51565d; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .save-tip { text-align: center; font-size: 13px; color: #8a8f99; }
+</style>
+</head>
+<body data-page-node-id="dkFc1oCzRbIgDa7symsMqM">
+<div class="hero" data-page-node-id="hRCijGSt4RFoZkvOxT1Thu">
+  <h1 data-page-node-id="0gaFtUCiatWNVovXDNZZ5q">免费测测：AI认识你的企业吗？</h1>
+  <p data-page-node-id="v9lakZjc2V0CpYq9hA6v86">3分钟了解你的企业，在AI搜索中的信息基础和可见度水平</p>
+</div>
+
+<div class="wrap" data-page-node-id="kUSSYcEO3zuTfA8Avt05Ct">
+  <!-- 问卷区 -->
+  <form id="form" class="card" onsubmit="return handleSubmit(event)" data-page-node-id="NyY67088lpmPVEE9eKsMma">
+    <div class="sec-title" data-page-node-id="Vi3aEaGDCXevdouKCFd9nD">一、企业基本信息</div>
+
+    <!-- ① 企业名称【必填】 -->
+    <div class="q" data-page-node-id="rVk0XmWVTVD1m5GCS0QHEX">
+      <div class="q-label" data-page-node-id="9MX22kZxWthCG7CvL2yzDB">企业名称<span class="q-req" data-page-node-id="C39HXhFGO1J6jL0WW6UehY">*</span></div>
+      <input type="text" id="企业名称" name="企业名称" required placeholder="请填写工商注册的企业全称" data-page-node-id="GrWLjNwLP61w895UubhUMG">
+      <div class="err" id="err-企业名称" data-page-node-id="ZLBqjX4Rv9EEPPkS4lBXjS">请填写企业名称</div>
+    </div>
+
+    <!-- ② 品牌名称【必填】 -->
+    <div class="q" data-page-node-id="LI7wJJeY4GGqHHItp0ZHbF">
+      <div class="q-label" data-page-node-id="a8CwLxH28IDF1UfG5eY7BK">品牌名称<span class="q-req" data-page-node-id="8HRc8Jb7QY4A5vBIwPCojS">*</span></div>
+      <input type="text" id="品牌名称" name="品牌名称" required placeholder="例如：元饮" data-page-node-id="lXbSlBHZCjaNaN7tvcDwCN">
+      <div class="q-desc" data-page-node-id="KkTPSImBeCNCCH054hpKID">如果企业拥有独立品牌，请填写主要品牌名称；如果企业名称本身就是品牌名称，可填写企业名称。</div>
+      <div class="err" id="err-品牌名称" data-page-node-id="lEmHdxtcLkV35GWkvxEFWu">请填写品牌名称（若暂无独立品牌，可填「无」或企业名称）</div>
+    </div>
+
+    <!-- ③ 官网【必填】 -->
+    <div class="q" data-page-node-id="WsV2GZsOWdQq2L897eiWoh">
+      <div class="q-label" data-page-node-id="Xle7IDtbV7rqUjyzh0N6p4">官网<span class="q-req" data-page-node-id="1znIy6AoO7htnCQN7mPKZL">*</span></div>
+      <input type="text" id="企业官网" name="企业官网" required placeholder="请填写官网地址，如 https://www.example.com" data-page-node-id="uLazpiwxQ6RTKLNwGCofB2">
+      <div class="err" id="err-企业官网" data-page-node-id="lm8m0s5ShIWRMDZPJZP24G">请填写官网</div>
+    </div>
+
+    <!-- ④ 核心产品【必填】 -->
+    <div class="q" data-page-node-id="Sxf9OlHPFMlRrFS9T2zc92">
+      <div class="q-label" data-page-node-id="MQj9rD0cSX0exoqXCoWBDv">核心产品<span class="q-req" data-page-node-id="6BNpureYQ2vRhANHxMxdyk">*</span></div>
+      <textarea id="企业主要产品/服务" name="企业主要产品/服务" required placeholder="例如：商用可乐机、工业切管机、企业AI培训"></textarea>
+      <div class="err" id="err-企业主要产品/服务" data-page-node-id="oVF5cTym5Uz3M5Qekw07Dj">请填写主要产品/服务</div>
+    </div>
+
+    <!-- ⑤ 所属行业【必填】 -->
+    <div class="q" data-page-node-id="xAhMW94fCl9FGPFv1ReHCH">
+      <div class="q-label" data-page-node-id="p7mJvlavsUi4s1PQFd9tFQ">所属行业<span class="q-req" data-page-node-id="XvolJMPStQou4PwdKDo4p0">*</span></div>
+      <select id="所属行业" name="所属行业" required data-page-node-id="4nYt2NslreXiouAi6IB1Bb">
+        <option value="" data-page-node-id="FsRBASG42HJVL1xXsItQuX">请选择</option>
+        <option data-page-node-id="8fXv4OQUSK9Jg58hGSFYoB">餐饮食品</option><option data-page-node-id="ZujJajnPlMdZk8loyzpyit">制造业</option><option data-page-node-id="g97vPGsNGAClGub3EWncrl">机械设备</option>
+        <option data-page-node-id="7fm0YuVa4sECUJPEF5QgwJ">建材家居</option><option data-page-node-id="aRk7lh05XXCLVvHdfeQbKT">电子科技</option><option data-page-node-id="Eu2yX40yE2gulEqC38EOdC">软件/互联网</option>
+        <option data-page-node-id="XF6eBrdFa03pnB4k5rsKv0">教育培训</option><option data-page-node-id="fugMAe9NAMBOA8bFpGZM8P">医疗健康</option><option data-page-node-id="KjH0K8xnQYnNeglxbCcV8M">美容/消费</option>
+        <option data-page-node-id="BVor1Ut5wzldKzkMRfTpom">汽车/汽配</option><option data-page-node-id="lyLyQwcrNMgnBgJq1BU06p">商贸/批发</option><option data-page-node-id="BYKLicI2v6t34vlZPoi0cB">企业服务</option>
+        <option data-page-node-id="Kokzr3QqrDUAWGm5h3Fn0U">房地产/建筑</option><option data-page-node-id="eD8CbQhPDFL1ITV7NudGT3">农业</option><option data-page-node-id="w6oKiAqYq4mIqNb1bpcHYa">其他</option>
+      </select>
+      <div class="err" id="err-所属行业" data-page-node-id="1ROZVaxGXW6oGT2jrTdi2h">请选择行业</div>
+    </div>
+
+    <!-- ⑥ 所在城市/主要经营区域【选填】 -->
+    <div class="q" data-page-node-id="aMZZH7mJgKAW1r3I1XM2aB">
+      <div class="q-label" data-page-node-id="FkHAE0TT3nsA30NnKG43vY">所在城市/主要经营区域<span class="q-req" style="color:#8a8f99" data-page-node-id="MPAO3tnyFopxDwlHYDcwCR">（选填）</span></div>
+      <input type="text" id="所在城市/主要经营区域" name="所在城市/主要经营区域" placeholder="例如：厦门" data-page-node-id="U9wyxM9AlJt3iZyKCs4Obg">
+      <div class="q-desc" data-page-node-id="qXMGnunccSZaGONxRhHHMI">可填写企业所在地或主要经营区域，选填。</div>
+    </div>
+
+    <!-- 评分题容器（静态渲染） -->
+    <div class="sec-title" data-page-node-id="F7BNPKVK1trAl5KRczny0I">二、企业实体信息</div>
+<div class="q" data-page-node-id="B6BkD8yga3zitDWENtw24a">
+  <div class="q-label" data-page-node-id="Be7cCwkXgtFLJXQHdDFoDg">企业是否有清晰、统一的企业介绍？<span class="q-req" data-page-node-id="mp9km5oB3pVAoSeEvR7AQM">*</span></div>
+  <div class="q-desc" data-page-node-id="EQgYzjk5IOgR2PwTb0aEEw">看不同平台上的企业名称、主营业务、企业简介是否基本一致</div>
+  <div class="opts" id="opts-Q06" data-page-node-id="rVRToe3TPFsGjhzZW5RtSH"><label class="opt" data-q="Q06" data-val="1" data-page-node-id="8F0gEER29C60DEDWS92ljT"><input type="radio" name="q-Q06" value="1" required data-page-node-id="8GE9WnTdfCyLf3r0m3kAYh"><b data-page-node-id="snnPVzPUVyoFqIvsGHQNpT">1</b>完全没有</label><label class="opt" data-q="Q06" data-val="2" data-page-node-id="MDyXETYOzmgOaQMCeMd49U"><input type="radio" name="q-Q06" value="2" data-page-node-id="LxWg8JeJn0rWwUuavt8U7A"><b data-page-node-id="DmAE0Yh6lOQr2CPqad73yH">2</b>刚开始建设</label><label class="opt" data-q="Q06" data-val="3" data-page-node-id="FRchsgmpERsLfvfBPUjZ8U"><input type="radio" name="q-Q06" value="3" data-page-node-id="ev8yE8eRb9RtSHkOLcELED"><b data-page-node-id="1HBgoSHnHmT5lGceGcvDfy">3</b>基本具备</label><label class="opt" data-q="Q06" data-val="4" data-page-node-id="3EP6jUlDZu4l7dNccZb5B1"><input type="radio" name="q-Q06" value="4" data-page-node-id="J8wdLLRRteLMMC0AkJ7YiD"><b data-page-node-id="na78UJxTaLcIydLdRQ02nS">4</b>比较完善</label><label class="opt" data-q="Q06" data-val="5" data-page-node-id="xE0CDkKFtpXUPVOKPZC56S"><input type="radio" name="q-Q06" value="5" data-page-node-id="q5OgPNjrrCHh84bAzZfsrn"><b data-page-node-id="8Dld3jIZj6pE82izptMnBd">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q06" data-page-node-id="APLzd2YI3CfuU1ADvsiWCj">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="afFdNXWw5i3QNOVcMQCAxD">
+  <div class="q-label" data-page-node-id="H2eZOa7G7FkKI6CcfILwLp">企业在不同互联网平台上的名称和基本信息是否统一？<span class="q-req" data-page-node-id="NBnNLaRx6AKsrYZUBtSUqh">*</span></div>
+  <div class="q-desc" data-page-node-id="KiCZpEizIogFHRTc0f0gO2">重点看企业名称、品牌名称、联系方式、官网、企业简介是否存在明显冲突</div>
+  <div class="opts" id="opts-Q07" data-page-node-id="lgjTKuz0RJM16TtY0mYeGa"><label class="opt" data-q="Q07" data-val="1" data-page-node-id="lgZT8S7fLM5mEBaipDWRWP"><input type="radio" name="q-Q07" value="1" required data-page-node-id="rOcxHEGdZuSBuoPYh2rR0A"><b data-page-node-id="IrGssaGscHQY9k75Jnd1I5">1</b>完全没有</label><label class="opt" data-q="Q07" data-val="2" data-page-node-id="rcmmZdcxcFJy3ZcfCB1FuJ"><input type="radio" name="q-Q07" value="2" data-page-node-id="NstbWgiQHKnXxuFlPiXQAC"><b data-page-node-id="Q96jAHerH8cQrHOAKxQ2Xg">2</b>刚开始建设</label><label class="opt" data-q="Q07" data-val="3" data-page-node-id="ZIATR9FD6VkiHGMwfXINz4"><input type="radio" name="q-Q07" value="3" data-page-node-id="Kj1WQmBDwLoAGXMO8OBlKd"><b data-page-node-id="oZoJSoevcyPpAx6x3t3tal">3</b>基本具备</label><label class="opt" data-q="Q07" data-val="4" data-page-node-id="TlRxzRmSOnx5NhKxGBbBm4"><input type="radio" name="q-Q07" value="4" data-page-node-id="GlpTN0pWUQA50ZFCUxbmkR"><b data-page-node-id="wbFTLPdIFRa0RDYRuz97mC">4</b>比较完善</label><label class="opt" data-q="Q07" data-val="5" data-page-node-id="fwONpFilTDK2eqSNRM0goj"><input type="radio" name="q-Q07" value="5" data-page-node-id="aQcyxqjwSR5DhqwCRyFlrX"><b data-page-node-id="BrjmBzgcMPKRHqya5NozlP">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q07" data-page-node-id="kmHiZNLle87WwKMJmhHKMR">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="y7nsI3tMLorGLScxcHV46C">
+  <div class="q-label" data-page-node-id="OgSRDhaNLrjXHB5OTilXJG">企业是否拥有比较完整的线上公开信息？<span class="q-req" data-page-node-id="EGe7R5HtGJCofYAfFgFqVy">*</span></div>
+  <div class="q-desc" data-page-node-id="QPMI0EaMPaRh8C9pu7BTGM">例如官网、企业平台主页、产品页面、企业介绍、新闻、行业文章、第三方平台资料</div>
+  <div class="opts" id="opts-Q08" data-page-node-id="MEKUolv9yYvvwMbsrN6Ecj"><label class="opt" data-q="Q08" data-val="1" data-page-node-id="soAF18OE7KzfFuo1KCCNVH"><input type="radio" name="q-Q08" value="1" required data-page-node-id="C5NLnlg92RnWEAUU6fR9np"><b data-page-node-id="NrMBHODRLBDhpzziV3fe4l">1</b>完全没有</label><label class="opt" data-q="Q08" data-val="2" data-page-node-id="6zuFAD5WVEqUtsjBT2uMfl"><input type="radio" name="q-Q08" value="2" data-page-node-id="zGFcIAKorslUPaMWw3aOs3"><b data-page-node-id="dGPgM8HDzxHiY1xhlvzkME">2</b>刚开始建设</label><label class="opt" data-q="Q08" data-val="3" data-page-node-id="xz5Wh6HgzZC3CkeKvmiyKG"><input type="radio" name="q-Q08" value="3" data-page-node-id="BJIH2mGkm7OfJMGfiXKbie"><b data-page-node-id="xQXzSDysXr8G4REVE7pVrY">3</b>基本具备</label><label class="opt" data-q="Q08" data-val="4" data-page-node-id="hl42ekCw0cX0hXmclokBXI"><input type="radio" name="q-Q08" value="4" data-page-node-id="SMAl3kfkiB0kDf32dvIbpc"><b data-page-node-id="R8jNqmeCvJDy8gsOm7Ok1d">4</b>比较完善</label><label class="opt" data-q="Q08" data-val="5" data-page-node-id="Wg9KVuhqS0qvqWt7g7Helw"><input type="radio" name="q-Q08" value="5" data-page-node-id="HlvXBfGtIkhxWUo5tCADCz"><b data-page-node-id="ETGKpSUwtShPsyVWwoiRjt">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q08" data-page-node-id="cIU0q8ot4Vb3NlkECIwzbM">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="M78mLiwagIf2h2EHSmcO75">
+  <div class="q-label" data-page-node-id="C4oRHze48Qs3CUvrbZxEIO">企业是否有清晰的「品牌—企业主体—产品」关系？<span class="q-req" data-page-node-id="mDE76jZEsWuann0wfg3zcI">*</span></div>
+  <div class="q-desc" data-page-node-id="EY9zsvoFcptypZgn1rpGcy">某品牌属于哪家公司、谁负责生产、谁负责销售、某产品属于哪个品牌</div>
+  <div class="opts" id="opts-Q09" data-page-node-id="zAhEEWwpuoENkvUN0HxJPp"><label class="opt" data-q="Q09" data-val="1" data-page-node-id="xCpgKnxkpYTwYJDqLNjSoz"><input type="radio" name="q-Q09" value="1" required data-page-node-id="OMELAbacecmZqUrMyv3XwI"><b data-page-node-id="SAphaP32QCGL27Yh7WUamx">1</b>完全没有</label><label class="opt" data-q="Q09" data-val="2" data-page-node-id="ovbTukiopnPcjVPn3EWSJx"><input type="radio" name="q-Q09" value="2" data-page-node-id="3q722rpgeSGI3EA9u31Q8F"><b data-page-node-id="kWkLceRlLDrOGXBeHyO9y8">2</b>刚开始建设</label><label class="opt" data-q="Q09" data-val="3" data-page-node-id="WoitTxBrGSPpKXguHfw6IG"><input type="radio" name="q-Q09" value="3" data-page-node-id="HnG8ySVDtnTJg84SWmMo7u"><b data-page-node-id="GxZlBCIvB0Lzhe1Ji3e0fF">3</b>基本具备</label><label class="opt" data-q="Q09" data-val="4" data-page-node-id="T8ub7kuXyMEWvVqopk7P3V"><input type="radio" name="q-Q09" value="4" data-page-node-id="lq7uUfEbWgYQkk3TF8NAp0"><b data-page-node-id="tRPNoFgb6dXB75vpyXUgVt">4</b>比较完善</label><label class="opt" data-q="Q09" data-val="5" data-page-node-id="b16aQIXZ5JDz0F2PQmpraH"><input type="radio" name="q-Q09" value="5" data-page-node-id="Yvc1vig7c7vRI2QCedjaqH"><b data-page-node-id="sD6CjBMceVh4D3C1Qeng5z">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q09" data-page-node-id="3tiJCSE52iaymq5E45s420">请选择一项</div>
+</div>
+<div class="sec-title" data-page-node-id="znUF8L0o5rPXyCobHrBFnj">三、产品信息</div>
+<div class="q" data-page-node-id="DY4PTqZ3sqpMsUzTwBdnxT">
+  <div class="q-label" data-page-node-id="Jjldmt5YPwRWfQhG22CNuK">核心产品是否有完整、标准化的产品介绍？<span class="q-req" data-page-node-id="mkEJDvJfIWjwSkhfoo5nEX">*</span></div>
+  <div class="q-desc" data-page-node-id="58wdIJpKHMuQLeyQ2Qo2Si">包括产品名称、用途、功能、特点、基本参数</div>
+  <div class="opts" id="opts-Q10" data-page-node-id="WuMmoTBZthpVfmeQh3ceBT"><label class="opt" data-q="Q10" data-val="1" data-page-node-id="8sSOqlxZsQUgTQDQa3ltNm"><input type="radio" name="q-Q10" value="1" required data-page-node-id="w8OxlQFa2pu5MJDHEamG5A"><b data-page-node-id="CH0y4o91NrQo77PfNwMTEh">1</b>完全没有</label><label class="opt" data-q="Q10" data-val="2" data-page-node-id="JK5D8AAr1pKyOcwHKXVqWm"><input type="radio" name="q-Q10" value="2" data-page-node-id="1hcDlVixHCF9uM6m9uMmn5"><b data-page-node-id="N4w6yzJPt4XikQnhN9X4sh">2</b>刚开始建设</label><label class="opt" data-q="Q10" data-val="3" data-page-node-id="zb8JN2KvXUGXUQUYzrHko2"><input type="radio" name="q-Q10" value="3" data-page-node-id="h8W4bq49g3CTO0KE6dNVO0"><b data-page-node-id="pXnWZqV7rdWnA05juLkT84">3</b>基本具备</label><label class="opt" data-q="Q10" data-val="4" data-page-node-id="nzOTytn5iceievZZHoXQld"><input type="radio" name="q-Q10" value="4" data-page-node-id="Ez8X7co4hozmGsykCzlCVV"><b data-page-node-id="Ak9teETxz7pjyl9nvT3AUS">4</b>比较完善</label><label class="opt" data-q="Q10" data-val="5" data-page-node-id="YTayCkP2SjJTsNDEgoOWMd"><input type="radio" name="q-Q10" value="5" data-page-node-id="eVDzHMXcbxqpW4fVV2oJNc"><b data-page-node-id="JGsP1r9xJ3CFIInLqF5Ekr">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q10" data-page-node-id="tc8bIKlk1scmcFeg5FfeaP">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="wV2qnsQ7p7CGaPgtg78rSn">
+  <div class="q-label" data-page-node-id="gYGnmFc0q1QfNcBqwUIG6s">产品是否明确说明适合哪些客户和使用场景？<span class="q-req" data-page-node-id="2GMGVFq9h3voYgYikxgykW">*</span></div>
+  <div class="q-desc" data-page-node-id="KVfTioWR5srmULEMPeZ5u2">适合什么行业、什么企业、什么门店、什么使用场景</div>
+  <div class="opts" id="opts-Q11" data-page-node-id="sLHK7JtzKZLqLG0bflnV0t"><label class="opt" data-q="Q11" data-val="1" data-page-node-id="xelRx2Li0QAsYWQu7HYUkz"><input type="radio" name="q-Q11" value="1" required data-page-node-id="JDKOr5sBMPHGGAcRAMAWSX"><b data-page-node-id="mCX6zYfPEyAFYESiPxCD45">1</b>完全没有</label><label class="opt" data-q="Q11" data-val="2" data-page-node-id="DcHtPxXD481M2kaIceGFZt"><input type="radio" name="q-Q11" value="2" data-page-node-id="u8bQeLP0NOvm6QKSRPgIWl"><b data-page-node-id="t4GfsFVzkI90eFugNcFLWD">2</b>刚开始建设</label><label class="opt" data-q="Q11" data-val="3" data-page-node-id="oIiKiL2VltuBjXyGBzm4Ow"><input type="radio" name="q-Q11" value="3" data-page-node-id="55QC71IDbhZmQhUXUKjdzn"><b data-page-node-id="IKNtXfLUMzr9nGDAn5gFJc">3</b>基本具备</label><label class="opt" data-q="Q11" data-val="4" data-page-node-id="PMHfIQxM3NXoTrDMhvFNU7"><input type="radio" name="q-Q11" value="4" data-page-node-id="N31Rgko3TAbzWjs0ujFxGX"><b data-page-node-id="9CwZIbTBtH2KI3PeEBimhB">4</b>比较完善</label><label class="opt" data-q="Q11" data-val="5" data-page-node-id="zyKD7GH2nohBuGaZl0Zk1y"><input type="radio" name="q-Q11" value="5" data-page-node-id="1hcHmFGytmK3KsLVVohUdT"><b data-page-node-id="BKCeAicJvH3E2gk4mrcHsE">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q11" data-page-node-id="dONQWcEVlhwEcq4b9OWsKh">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="6SvigAwQewIHQducAXoNY8">
+  <div class="q-label" data-page-node-id="EkckMlIzbGgh1u1IJ7GFkQ">产品是否拥有比较完整的参数、功能、优势等信息？<span class="q-req" data-page-node-id="ClbNFcVqkRFpIniv9GVtp2">*</span></div>
+  <div class="q-desc" data-page-node-id="bcsTopp8msQyYGytoLy7CS">规格、技术参数、功能、配置、使用方式、产品优势</div>
+  <div class="opts" id="opts-Q12" data-page-node-id="kBGGw1YXmpXKU2ZENkWdm7"><label class="opt" data-q="Q12" data-val="1" data-page-node-id="ANPUbBICvRRU7fjDUwbiWv"><input type="radio" name="q-Q12" value="1" required data-page-node-id="e6WYKUZSCNClBvAJH3gREu"><b data-page-node-id="lTaxQVZvO47MsEFH7YKIS4">1</b>完全没有</label><label class="opt" data-q="Q12" data-val="2" data-page-node-id="BGYgvhcMdULrnbnUYRSvrI"><input type="radio" name="q-Q12" value="2" data-page-node-id="uLouMGjoxpwTpCnSEnw3VH"><b data-page-node-id="qZDDyVaBF5HuHvmWk8z4Fp">2</b>刚开始建设</label><label class="opt" data-q="Q12" data-val="3" data-page-node-id="db44Ik1e69vKdTGlg76BgM"><input type="radio" name="q-Q12" value="3" data-page-node-id="cjscSZpidnEzfbwMbr1DdI"><b data-page-node-id="cr7222o8gD83AQK7MUakvY">3</b>基本具备</label><label class="opt" data-q="Q12" data-val="4" data-page-node-id="nLDBeC4ZCzpw5iBpFhXpqF"><input type="radio" name="q-Q12" value="4" data-page-node-id="G7Hi8rR6zrGv7uDLIxvXOT"><b data-page-node-id="pkmMePNg9cHEXSArRd2Zwa">4</b>比较完善</label><label class="opt" data-q="Q12" data-val="5" data-page-node-id="y8Gv0kgr7tJNdERlIQjjvx"><input type="radio" name="q-Q12" value="5" data-page-node-id="BQhUQIGLIrHSVbaONL7CGx"><b data-page-node-id="O1YTJnSLAN6tA5oZUa6bKf">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q12" data-page-node-id="u48rZn5OgpFBKxb712l6fw">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="fvjASfK69OsclUkqUQfYxE">
+  <div class="q-label" data-page-node-id="WbePwWRL8i6fgxsxpItfT7">企业是否拥有真实客户案例或应用案例？<span class="q-req" data-page-node-id="TkJdssr2VGcmwpb0ANj8Mq">*</span></div>
+  <div class="q-desc" data-page-node-id="iZMJ46M060XuUk3CVN42z3">客户案例、项目案例、应用场景、客户反馈、实际使用效果</div>
+  <div class="opts" id="opts-Q13" data-page-node-id="WOexainxX3ErfJlmDKGFnt"><label class="opt" data-q="Q13" data-val="1" data-page-node-id="QwKdELSOOi508Gu631D7Wi"><input type="radio" name="q-Q13" value="1" required data-page-node-id="GeH1rHxB4NVsEsTEWIfRv0"><b data-page-node-id="OiUnCwN50sWCuiZl3Ecv8p">1</b>完全没有</label><label class="opt" data-q="Q13" data-val="2" data-page-node-id="y3wzuk3XKTw3bIyxyb98VV"><input type="radio" name="q-Q13" value="2" data-page-node-id="HFO85o2hdSQVDZnpngDumC"><b data-page-node-id="IbjluAyHkOQOX5FmLNt9zW">2</b>刚开始建设</label><label class="opt" data-q="Q13" data-val="3" data-page-node-id="z7gC7AJsFLZrnPmQSV4aZz"><input type="radio" name="q-Q13" value="3" data-page-node-id="XwGQ9cyXnPu1WRPIu6WiPn"><b data-page-node-id="9dPQJk8IE4akVLr173pGJN">3</b>基本具备</label><label class="opt" data-q="Q13" data-val="4" data-page-node-id="SkDTFVEliDAUp1jfMKbXoh"><input type="radio" name="q-Q13" value="4" data-page-node-id="kJ9pY0TXecgmCY7W5tpSrk"><b data-page-node-id="0pOD44WwTZyCUE9o2gd0On">4</b>比较完善</label><label class="opt" data-q="Q13" data-val="5" data-page-node-id="Vy43Gse499tyrtKNsXGSAS"><input type="radio" name="q-Q13" value="5" data-page-node-id="Ck2mcclQ2BdREVtj5loFKv"><b data-page-node-id="ChBVrmVQOV8rWQkfX9L7T4">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q13" data-page-node-id="J7cfr3ZCumMTT6a5o2IAQF">请选择一项</div>
+</div>
+<div class="sec-title" data-page-node-id="34iyiwchbU8pYUFqYBEeE2">四、内容资产</div>
+<div class="q" data-page-node-id="ozNGh0zxjgRVC8PKfEucR0">
+  <div class="q-label" data-page-node-id="3640n4dDnAHHwiB4rstYeZ">企业是否持续发布行业相关内容？<span class="q-req" data-page-node-id="zX8O5wyPBXo7Bf7HM6hKdc">*</span></div>
+  <div class="q-desc" data-page-node-id="SeJ0qBP0BKKdqfVd2YMtcb">行业知识、趋势、问题、解决方案、行业经验</div>
+  <div class="opts" id="opts-Q14" data-page-node-id="ZZImsq55WqcCjlsk9NvBzB"><label class="opt" data-q="Q14" data-val="1" data-page-node-id="hqL9lihwkYB1VwU2kJEHQS"><input type="radio" name="q-Q14" value="1" required data-page-node-id="SWQQQWh4ex31HCv1q8b05G"><b data-page-node-id="81SGrO89SySVPlGfyms5XU">1</b>完全没有</label><label class="opt" data-q="Q14" data-val="2" data-page-node-id="0Xo1pKLbWw1k6tQD1AuFDu"><input type="radio" name="q-Q14" value="2" data-page-node-id="M5jtL1eXszjzxyp014DQpO"><b data-page-node-id="g3AGm2Abch2lAHuXRPwVZV">2</b>刚开始建设</label><label class="opt" data-q="Q14" data-val="3" data-page-node-id="48T4QGVk6cy4t2CREPEOEO"><input type="radio" name="q-Q14" value="3" data-page-node-id="oPUFBZ73QCIgTKobFLAr4N"><b data-page-node-id="JSQpBclCkyIdn2HtKeTyXs">3</b>基本具备</label><label class="opt" data-q="Q14" data-val="4" data-page-node-id="ZhnGmwyXb2wqC0Bc2r4sl8"><input type="radio" name="q-Q14" value="4" data-page-node-id="UnNp1gQeEWWwmV9ZAi0yMI"><b data-page-node-id="2XqiuhzEHSvzq0LBx7OUId">4</b>比较完善</label><label class="opt" data-q="Q14" data-val="5" data-page-node-id="tJQCPF5XvYmBaxyvsfZh73"><input type="radio" name="q-Q14" value="5" data-page-node-id="gNHczhfmug4nY3Nz7hcshB"><b data-page-node-id="7DzogOrgCUsx88Pc6PVOv2">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q14" data-page-node-id="97t2Cqdv4u9YqtH4Pd1r1m">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="C8nk3foBvNeCcIbdWc3wWf">
+  <div class="q-label" data-page-node-id="DXC7m0OmHwbCrd3oqpuBQL">企业是否持续发布产品或解决方案内容？<span class="q-req" data-page-node-id="KX23840NNH7LTGwAM1Ykak">*</span></div>
+  <div class="q-desc" data-page-node-id="5As0RW9vQkkVt1UAHccbKa">产品介绍、产品对比、使用方法、选型、解决方案</div>
+  <div class="opts" id="opts-Q15" data-page-node-id="RGDMwFSyaiW20BJG2Tiqsh"><label class="opt" data-q="Q15" data-val="1" data-page-node-id="Yv5esUCp6rSHKGSfycQhUQ"><input type="radio" name="q-Q15" value="1" required data-page-node-id="shyZCX5nh00AKSDBEKO8Fd"><b data-page-node-id="8STIZ6dGhGteraK7iLp4B8">1</b>完全没有</label><label class="opt" data-q="Q15" data-val="2" data-page-node-id="q0eDSBf1EnnjQMxpMUAzWQ"><input type="radio" name="q-Q15" value="2" data-page-node-id="ANplxNa9fdJaGte3Bnn6Nl"><b data-page-node-id="qUfcaggHOxmy2UzHorYAhQ">2</b>刚开始建设</label><label class="opt" data-q="Q15" data-val="3" data-page-node-id="9JTB6WRiXmf4HE6LWh7FS2"><input type="radio" name="q-Q15" value="3" data-page-node-id="JpT2kBSk5wyGf5j7NVlsl5"><b data-page-node-id="sOThCjTMFBJvV5KFdBI53v">3</b>基本具备</label><label class="opt" data-q="Q15" data-val="4" data-page-node-id="F6ONnxz2OEO9rmwLaULFta"><input type="radio" name="q-Q15" value="4" data-page-node-id="nDHcGODsKC5lVJHa9e4KON"><b data-page-node-id="FLh8cIZh5uASopIjgpQ8nX">4</b>比较完善</label><label class="opt" data-q="Q15" data-val="5" data-page-node-id="kliJkFGj5QCzkpFHi9HLao"><input type="radio" name="q-Q15" value="5" data-page-node-id="cjYKxLrznUJeuTUMHwnKwE"><b data-page-node-id="GyVpgPVAfxpUiu1zZnOzQX">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q15" data-page-node-id="PiUSw3RBpDtzZGLTDwAp6c">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="yKzv7quNtLrnVrHX3mY3Dm">
+  <div class="q-label" data-page-node-id="OEyZ4R8OLTxZFhwYsIu1Ns">企业是否拥有专业的行业知识或经验内容？<span class="q-req" data-page-node-id="tDjqU2Zglv975Ed3mGr4dE">*</span></div>
+  <div class="q-desc" data-page-node-id="5kmSBeO0JPSAN7EWvpyX6B">例如「XX行业设备怎么选」「XX设备常见问题」「XX行业成本怎么降低」</div>
+  <div class="opts" id="opts-Q16" data-page-node-id="m9AHP1M2qm1e7MpJ9t0wQY"><label class="opt" data-q="Q16" data-val="1" data-page-node-id="7ZCMqtFAZkTBzFAJJ47azB"><input type="radio" name="q-Q16" value="1" required data-page-node-id="TPAWJsOOKRYb986w2xLWAB"><b data-page-node-id="lgErYVxrhX5LL6IUe3PXNL">1</b>完全没有</label><label class="opt" data-q="Q16" data-val="2" data-page-node-id="e23h1H4CzreSeDxrejwlXw"><input type="radio" name="q-Q16" value="2" data-page-node-id="Makf4nzZKOo3ktAUHIw8eu"><b data-page-node-id="qwOBMdMJbGLdcXuI6lbt5D">2</b>刚开始建设</label><label class="opt" data-q="Q16" data-val="3" data-page-node-id="2nl5VXqeqtxhAyRHoglJgT"><input type="radio" name="q-Q16" value="3" data-page-node-id="yuUQl8x1rMiGREvmpuSJc0"><b data-page-node-id="yKUZySshI4V2wuDGUGaDz5">3</b>基本具备</label><label class="opt" data-q="Q16" data-val="4" data-page-node-id="C8gldLbHII4DhkImerAs1L"><input type="radio" name="q-Q16" value="4" data-page-node-id="Lls7AZakA1ZgNaQamqMmZj"><b data-page-node-id="t1XNsetw600CADolhf2dPA">4</b>比较完善</label><label class="opt" data-q="Q16" data-val="5" data-page-node-id="ZEsRd6PJV5cWCT27AarpiS"><input type="radio" name="q-Q16" value="5" data-page-node-id="1rzHJUBwqJkqHE1JTjuIkf"><b data-page-node-id="8GE5gmPHUx1SFBF9CxnVNP">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q16" data-page-node-id="EMjCNrszTHQ87LvBW6zzcW">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="IMAdcyyeLQmoe8brXWXYRj">
+  <div class="q-label" data-page-node-id="iuvlhpHNVF2dYXE4zPYZlY">企业是否有比较完整的FAQ问答内容？<span class="q-req" data-page-node-id="ZJliWMxzNwDVKHc7Hw52Ul">*</span></div>
+  <div class="q-desc" data-page-node-id="t05sQ4VFUuXZJczX5aPtCe">产品多少钱、怎么选、有什么区别、怎么安装、售后怎么样、适合什么场景</div>
+  <div class="opts" id="opts-Q17" data-page-node-id="LNR72dyINJE0jLHM6Ug3UI"><label class="opt" data-q="Q17" data-val="1" data-page-node-id="tbFXpKqNEJR6OWola5IUMI"><input type="radio" name="q-Q17" value="1" required data-page-node-id="Z0v1gKD78PslP6eVpDQL1g"><b data-page-node-id="j8RGJTnRQB9x2fUX4y9d3D">1</b>完全没有</label><label class="opt" data-q="Q17" data-val="2" data-page-node-id="yNFK7knwMvf8pWGlKTH2bE"><input type="radio" name="q-Q17" value="2" data-page-node-id="EtbPDE6FJRLAMu6ilAwzSz"><b data-page-node-id="ChyOzXab0iDGUBAOogz530">2</b>刚开始建设</label><label class="opt" data-q="Q17" data-val="3" data-page-node-id="RjQ4sOHSfgBNQW3T87nbWB"><input type="radio" name="q-Q17" value="3" data-page-node-id="xsfCtxW6XfwtWE2GGt9Nwx"><b data-page-node-id="oz4uE3OPCU4ETEsQ9hvlNE">3</b>基本具备</label><label class="opt" data-q="Q17" data-val="4" data-page-node-id="F86iv6EQKPvBrKpLDe4VG3"><input type="radio" name="q-Q17" value="4" data-page-node-id="XsUHR5QffasVlhawfO0H3S"><b data-page-node-id="F5g2GhFMkbMDMWi6Wq1FLC">4</b>比较完善</label><label class="opt" data-q="Q17" data-val="5" data-page-node-id="jaHePKZxoDLRsP8p1mAmYY"><input type="radio" name="q-Q17" value="5" data-page-node-id="HBJ6Ht8dcBVDgGMLwYt9SI"><b data-page-node-id="kOJhC8GoBSXygBe3jfl8Gr">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q17" data-page-node-id="AxoX27TumcBVf89DkSGrxw">请选择一项</div>
+</div>
+<div class="sec-title" data-page-node-id="bVo7di0wWBRSq3c3N8SWut">五、AI可理解性</div>
+<div class="q" data-page-node-id="afilBgE5i086agJQSOpHif">
+  <div class="q-label" data-page-node-id="tUh2cB57PDDu42WkVv2Bes">企业重要信息是否以清晰、结构化的文字形式存在？<span class="q-req" data-page-node-id="cYaY0DZFITjKnNh1YN8wsD">*</span></div>
+  <div class="q-desc" data-page-node-id="IRcBDEeZdlKniHsHq4jFv8">判断信息是否只有图片、视频、海报，还是同时有容易被读取理解的文字信息</div>
+  <div class="opts" id="opts-Q18" data-page-node-id="zNl8XFyz8Sxt3UbG1OkcsS"><label class="opt" data-q="Q18" data-val="1" data-page-node-id="GRJh6luUr2KqCVNkFS2KkD"><input type="radio" name="q-Q18" value="1" required data-page-node-id="hBdQHxvn229zYJHCribq6l"><b data-page-node-id="2brPh7qTUxMiUzJyatDPg8">1</b>完全没有</label><label class="opt" data-q="Q18" data-val="2" data-page-node-id="vvmeAsqrU3Z7hLehbhYDci"><input type="radio" name="q-Q18" value="2" data-page-node-id="usjBuvjZa4qwQWD6FMRxMQ"><b data-page-node-id="CeXjnp2XBPKCFcFIUgFPpG">2</b>刚开始建设</label><label class="opt" data-q="Q18" data-val="3" data-page-node-id="9DUFmFWkU8NmAOE2ZllJj4"><input type="radio" name="q-Q18" value="3" data-page-node-id="MsD5D7k8nVcvayubcCEuIP"><b data-page-node-id="agecya8gB45qqRwf9V6Pkh">3</b>基本具备</label><label class="opt" data-q="Q18" data-val="4" data-page-node-id="a23ehLrdQkYUHZxqOcMBcG"><input type="radio" name="q-Q18" value="4" data-page-node-id="gdKsQGHkJzJ8NKEJt6emlf"><b data-page-node-id="Hj7CxLsLSx5KIh9rKU0Lg8">4</b>比较完善</label><label class="opt" data-q="Q18" data-val="5" data-page-node-id="2v9yAWdwHwvOLVQ76iWaUo"><input type="radio" name="q-Q18" value="5" data-page-node-id="4mmjLVkYqfGjHLF46ZtMJe"><b data-page-node-id="RjAIyAs2OwRImBMHzl0luF">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q18" data-page-node-id="2iRIvM8l3R5xAWcrPGMhcS">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="awAeyAWaGx5e4u1nU5KlvS">
+  <div class="q-label" data-page-node-id="JKh2nFJHhYCv21WsQadeW1">产品信息是否能够直接回答客户常见问题？<span class="q-req" data-page-node-id="BbTZ8WHd61OE7qXDivOSQS">*</span></div>
+  <div class="q-desc" data-page-node-id="smyu73TyhlWAJH7w39TN0F">是什么、给谁用、有什么优势、怎么选、怎么购买、售后怎么样</div>
+  <div class="opts" id="opts-Q19" data-page-node-id="k8Az2v0t5hpBvQxDUEQvlu"><label class="opt" data-q="Q19" data-val="1" data-page-node-id="5DzoeUVlfT5TNG1u2E1m8C"><input type="radio" name="q-Q19" value="1" required data-page-node-id="hIaGCqogQC4iedomQB7HXE"><b data-page-node-id="R4LQPodiIIcRFerUZmhFRN">1</b>完全没有</label><label class="opt" data-q="Q19" data-val="2" data-page-node-id="Q5MuSJ5M6HtaAyBlPrA4Mg"><input type="radio" name="q-Q19" value="2" data-page-node-id="LCQjg0jQClGptRAsZkOqkd"><b data-page-node-id="yfL62Hls9Q07BYJBEQGLCf">2</b>刚开始建设</label><label class="opt" data-q="Q19" data-val="3" data-page-node-id="kLjPiyKgLE4NXjR5UOEuTr"><input type="radio" name="q-Q19" value="3" data-page-node-id="cbG9wQDIJoq4rphglazUn8"><b data-page-node-id="HFa2vAOGtdbQLwrMt7BD7V">3</b>基本具备</label><label class="opt" data-q="Q19" data-val="4" data-page-node-id="D8BepGPmDjVpHdqIHARaLv"><input type="radio" name="q-Q19" value="4" data-page-node-id="VvnGtHrDsAOnLayPKGLixQ"><b data-page-node-id="BN4B1rkbBP2e7FOj1uHeba">4</b>比较完善</label><label class="opt" data-q="Q19" data-val="5" data-page-node-id="0aOwXIUdKMGT91Zdh1WID3"><input type="radio" name="q-Q19" value="5" data-page-node-id="Bdm45yY9Nt8pysNPdpr82m"><b data-page-node-id="6gMQLN2rUKIJb9DCfghsHh">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q19" data-page-node-id="ShobjFHVPw4bzddQmsoqgM">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="Mz0GI27GcFgjflkNFsxBTg">
+  <div class="q-label" data-page-node-id="kFxBO1aDTUn7geBYrdeHTP">企业官网和公开内容是否容易被搜索和检索？<span class="q-req" data-page-node-id="WArirHvOR4PaBl9XIAtCIP">*</span></div>
+  <div class="q-desc" data-page-node-id="hrTWVfPls94cRTFLSvFana">包括搜索引擎、AI搜索、行业平台、第三方平台</div>
+  <div class="opts" id="opts-Q20" data-page-node-id="EzM4NLiqXD0hcyYWEg6aU1"><label class="opt" data-q="Q20" data-val="1" data-page-node-id="sZDqauwaUhBsaqADAfUjak"><input type="radio" name="q-Q20" value="1" required data-page-node-id="DMxSHMHOnjaT6WWJX8LvBu"><b data-page-node-id="4sapjzX5d0mEPzmzxUoLtq">1</b>完全没有</label><label class="opt" data-q="Q20" data-val="2" data-page-node-id="wXz8aL107ReFYptgfoMDbE"><input type="radio" name="q-Q20" value="2" data-page-node-id="UPNxrjATTv38y5qRBWc59E"><b data-page-node-id="QPurELwBYZbVaCVaBaIlgs">2</b>刚开始建设</label><label class="opt" data-q="Q20" data-val="3" data-page-node-id="sFc2E60V8c7CZ9FuauoiHu"><input type="radio" name="q-Q20" value="3" data-page-node-id="Aj0RkjIsDzZ2b1WD6BRCk6"><b data-page-node-id="RreA7AkMc1bZcqZleR6kjz">3</b>基本具备</label><label class="opt" data-q="Q20" data-val="4" data-page-node-id="iXvoUjSadX8HX7Wc3heKUv"><input type="radio" name="q-Q20" value="4" data-page-node-id="I0oeadGvPM1FmDyzlFuHSG"><b data-page-node-id="xwBcDoU2lWlYLsmelG4dN3">4</b>比较完善</label><label class="opt" data-q="Q20" data-val="5" data-page-node-id="fQDHIC5tGShHTHLGsSfuVj"><input type="radio" name="q-Q20" value="5" data-page-node-id="E2pbBFHKmhyovkwJX19Ptq"><b data-page-node-id="NxqFr9DwfIChbHtLCLQppO">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q20" data-page-node-id="hnX8fGgL8lBxFB3opQgDcA">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="S6O6dvHpREIyT6p0dIHMMh">
+  <div class="q-label" data-page-node-id="JwgnSGrd793aYCoq8bNcz5">企业是否拥有足够的第三方平台信息支持品牌可信度？<span class="q-req" data-page-node-id="VC9aAOzMDMYxpMSG90OJ1J">*</span></div>
+  <div class="q-desc" data-page-node-id="LlFPsDHxvlhDFyuhzaLgXg">行业平台、B2B平台、新闻媒体、企业信息平台、社交媒体、专业社区</div>
+  <div class="opts" id="opts-Q21" data-page-node-id="GBMmuGh8JkG5KvLMpbfSpQ"><label class="opt" data-q="Q21" data-val="1" data-page-node-id="BzKxO4QvAHwiwLp0g0JGi2"><input type="radio" name="q-Q21" value="1" required data-page-node-id="zSqpZFLpgTBxGSHSF8ak7T"><b data-page-node-id="y4OqljNDiMJmXOAjrRHp4l">1</b>完全没有</label><label class="opt" data-q="Q21" data-val="2" data-page-node-id="ZKsaGP9TDOCtkoRsorWxsc"><input type="radio" name="q-Q21" value="2" data-page-node-id="FZR6PhqVdeW9LMgQyKZAeC"><b data-page-node-id="5jZ23Qb2OYJalOJvML8OHA">2</b>刚开始建设</label><label class="opt" data-q="Q21" data-val="3" data-page-node-id="ju9muAdPZ5EKGqh8xn0gS1"><input type="radio" name="q-Q21" value="3" data-page-node-id="8M5qRJSjYruHmED6Y5clOd"><b data-page-node-id="foHkAAAonzxuEe7EHrZku2">3</b>基本具备</label><label class="opt" data-q="Q21" data-val="4" data-page-node-id="CLUbz3L2cL2v0vUnbZw44a"><input type="radio" name="q-Q21" value="4" data-page-node-id="zuCykTgO9Kncxc2fsvSBUb"><b data-page-node-id="I9iMFD8L6m7GHhYQQUFCVN">4</b>比较完善</label><label class="opt" data-q="Q21" data-val="5" data-page-node-id="K85itiPIHqnEkob18ojYF6"><input type="radio" name="q-Q21" value="5" data-page-node-id="2YYrF71dw5HxyZYmmZhX2C"><b data-page-node-id="7GCpv7FQNjmhBUfEmtH8zO">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q21" data-page-node-id="mAJWuvFD16mz7njxTwJc3m">请选择一项</div>
+</div>
+<div class="sec-title" data-page-node-id="en4EoKEidZbwu0Uyz9Avzk">六、AI搜索验证</div>
+<div class="q" data-page-node-id="oXIC7hBDxmxsmCqYD6OMqI">
+  <div class="q-label" data-page-node-id="R8wtLB86FZEOvhvgqvyCzT">企业是否主动在AI平台搜索过自己的企业？<span class="q-req" data-page-node-id="0MEPVpL1ewUPizNWFtOGOv">*</span></div>
+  <div class="q-desc" data-page-node-id="K3cLJ3FhjHtWnAULTuYdrz">例如豆包、DeepSeek、通义、腾讯元宝、Kimi、ChatGPT 等</div>
+  <div class="opts" id="opts-Q22" data-page-node-id="5ndnX3OJdYZQan4w7drURE"><label class="opt" data-q="Q22" data-val="1" data-page-node-id="3vEKcFE90TaqpDbTxejaxi"><input type="radio" name="q-Q22" value="1" required data-page-node-id="A7eWJDj6M5vot4iJpTvTyJ"><b data-page-node-id="lRGSps2NINUBpxdNoHJPOf">1</b>完全没有</label><label class="opt" data-q="Q22" data-val="2" data-page-node-id="5VE3dI7hwEF7wHC09B0D9v"><input type="radio" name="q-Q22" value="2" data-page-node-id="VnnFPjbV2z8xOZvQ9Byepg"><b data-page-node-id="gMnBe64lVD4xIbyPx1jqDK">2</b>刚开始建设</label><label class="opt" data-q="Q22" data-val="3" data-page-node-id="I9mu8lnoYIZp0abWHNSpUn"><input type="radio" name="q-Q22" value="3" data-page-node-id="32cnjxwgOpmoMPNmBGcoYc"><b data-page-node-id="8SOGOQASd4gyhRNyM7EdSr">3</b>基本具备</label><label class="opt" data-q="Q22" data-val="4" data-page-node-id="gTAm2UYtuRS98NWB3fYpXJ"><input type="radio" name="q-Q22" value="4" data-page-node-id="KdmYXqXbUebroB2bKgtuRA"><b data-page-node-id="LZ1j1BqS90iCyqIJThHqUM">4</b>比较完善</label><label class="opt" data-q="Q22" data-val="5" data-page-node-id="NS7DeWExLYmnlHXAEJCjcn"><input type="radio" name="q-Q22" value="5" data-page-node-id="7k8zhFlx0o2DUwrcIdnZvi"><b data-page-node-id="MwGu6ImfSocDsO879CSSCh">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q22" data-page-node-id="m0swDsZ9s555srCI4EHbLk">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="hTDP9mG3DqCrx5eREzqewS">
+  <div class="q-label" data-page-node-id="OHF0G7k2EB52pJDR9gog7b">AI能否准确介绍你的企业？<span class="q-req" data-page-node-id="uU9XxbOPiY4dia49k8wfly">*</span></div>
+  <div class="q-desc" data-page-node-id="40tsrFh8SZLbBB4qqpV3yv">输入「XX公司是做什么的？」，AI能否正确识别企业、描述业务和品牌</div>
+  <div class="opts" id="opts-Q23" data-page-node-id="QokgwGfc9i7yVyBFUOMlna"><label class="opt" data-q="Q23" data-val="1" data-page-node-id="8mnB6ntqBO6JCzPd3AHEA0"><input type="radio" name="q-Q23" value="1" required data-page-node-id="rfExZvO7EPNVvjg1WS8gdn"><b data-page-node-id="Z0gmdimZ2iCJGZUc40STrG">1</b>完全没有</label><label class="opt" data-q="Q23" data-val="2" data-page-node-id="DYhhedeqhuMDHwvAQsT1GV"><input type="radio" name="q-Q23" value="2" data-page-node-id="FwLNTUjV7b0aBOt3iLxCq9"><b data-page-node-id="iQIPJQ1jSjAZercGIYxqFg">2</b>刚开始建设</label><label class="opt" data-q="Q23" data-val="3" data-page-node-id="DJeL57Fb9B86e2mhjzpjbV"><input type="radio" name="q-Q23" value="3" data-page-node-id="BMGEWkqi4vf1FG42EWGgXJ"><b data-page-node-id="tfJImQAg3QCQLqVz4m226A">3</b>基本具备</label><label class="opt" data-q="Q23" data-val="4" data-page-node-id="HZiAYZKOiBOgxSpW5iN8zq"><input type="radio" name="q-Q23" value="4" data-page-node-id="Rxspd2u7BD2GF9XVmHqh8P"><b data-page-node-id="73qlzgidsVeqFDPmSdAMy0">4</b>比较完善</label><label class="opt" data-q="Q23" data-val="5" data-page-node-id="Psl2KVvzDZ0gDKnz84Vefq"><input type="radio" name="q-Q23" value="5" data-page-node-id="v1BAhlGHXRQOPXBf9e1cxo"><b data-page-node-id="XO0eXrcIPDIwkeG85E3JVI">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q23" data-page-node-id="ziHfl0niD7HArXX0VS9DWL">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="iIx9ENn1HRB030H5Tfe8pk">
+  <div class="q-label" data-page-node-id="55u8xAELWbVzKXLcaBK39p">AI能否准确描述企业的核心产品？<span class="q-req" data-page-node-id="A3NESMK599Pw6P1AY0N0rP">*</span></div>
+  <div class="q-desc" data-page-node-id="aL36CdNjX5q3M1QV8tqa6z">输入「XX公司的主要产品有哪些？」，AI能否准确回答</div>
+  <div class="opts" id="opts-Q24" data-page-node-id="HdYQe6Jgn49T3hRHJDNTBx"><label class="opt" data-q="Q24" data-val="1" data-page-node-id="3RGArVu6IC07UT2vG71xfb"><input type="radio" name="q-Q24" value="1" required data-page-node-id="Ymv3r3Qc8U595KC95BczSl"><b data-page-node-id="hq1QumvTqlsEmsSjrlph3l">1</b>完全没有</label><label class="opt" data-q="Q24" data-val="2" data-page-node-id="X4aAk9VDUDIXGUrmJpNOat"><input type="radio" name="q-Q24" value="2" data-page-node-id="Xo9yibFcBsKWJjuzlD6Egb"><b data-page-node-id="6O7XabfkXyZosKfh3AsRTS">2</b>刚开始建设</label><label class="opt" data-q="Q24" data-val="3" data-page-node-id="iCf7HCDGcRJfvdT3cnrR05"><input type="radio" name="q-Q24" value="3" data-page-node-id="B0lN98qoo20KyIQ5h5TCD9"><b data-page-node-id="ZWZA05DF4f7gUx9reOBWPQ">3</b>基本具备</label><label class="opt" data-q="Q24" data-val="4" data-page-node-id="a3Q6zWgfrCHwPoX5yYKdS6"><input type="radio" name="q-Q24" value="4" data-page-node-id="8SNlS4tNrCbIXTjPcNtues"><b data-page-node-id="qmxymMZ5Cp1hQRj1k4cpnz">4</b>比较完善</label><label class="opt" data-q="Q24" data-val="5" data-page-node-id="JpGRHQHOWXgurFLCSAyHER"><input type="radio" name="q-Q24" value="5" data-page-node-id="PqCAwwT8CUy2yInxbb7LMk"><b data-page-node-id="G5RYb33wvEeZOXlJYszlNA">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q24" data-page-node-id="GecvhGX2j8IK0VFfnHyvNU">请选择一项</div>
+</div>
+<div class="q" data-page-node-id="RkVbCFRAAjBo9Uo5OV5wRA">
+  <div class="q-label" data-page-node-id="gAD8vjbrL1FQ1StIB5Nvv4">当用户询问「某行业有哪些供应商/品牌值得选择？」，企业是否有机会被AI提及？<span class="q-req" data-page-node-id="Qt5dcXQpvyjkpvCpCtCADo">*</span></div>
+  <div class="q-desc" data-page-node-id="TlvKhtdHezEiEjuykufIBv">不是问推荐概率，而是问企业是否主动做过这类验证</div>
+  <div class="opts" id="opts-Q25" data-page-node-id="D4bPE5e8wYPa879HuFEwpT"><label class="opt" data-q="Q25" data-val="1" data-page-node-id="uhw5uSOMtKiSMACG4XC9Lp"><input type="radio" name="q-Q25" value="1" required data-page-node-id="EEIXae9N863GqxER2EWYQN"><b data-page-node-id="bIcCkkLEbPFO58GKAzTPWi">1</b>完全没有</label><label class="opt" data-q="Q25" data-val="2" data-page-node-id="2OL7RfVpUKWiHCxgfuU7iN"><input type="radio" name="q-Q25" value="2" data-page-node-id="9567UnGJLBcnrR5Z8qVlE2"><b data-page-node-id="UaJpR3IbjdBBFYSmrHVWND">2</b>刚开始建设</label><label class="opt" data-q="Q25" data-val="3" data-page-node-id="fcSZFLsk75vVqIaEyJdEdG"><input type="radio" name="q-Q25" value="3" data-page-node-id="iFfLc85Di48miqXB20CIoA"><b data-page-node-id="cXzvClzrG4ZxERRSrj56wo">3</b>基本具备</label><label class="opt" data-q="Q25" data-val="4" data-page-node-id="wsoILv925p53MFnN8kBWh3"><input type="radio" name="q-Q25" value="4" data-page-node-id="xffy2uRiNFPC2ZJtQQEEF6"><b data-page-node-id="f5APhHUUzwCKq2KmZuYGjM">4</b>比较完善</label><label class="opt" data-q="Q25" data-val="5" data-page-node-id="TEAmRTNfUMvGeMnDgDIyEv"><input type="radio" name="q-Q25" value="5" data-page-node-id="8I1dqudI1n36hE1eJxkQU2"><b data-page-node-id="fklR6cgZMBjxNLJVh3yp9X">5</b>已经系统化</label></div>
+  <div class="err" id="err-Q25" data-page-node-id="ojbCAYSXOIxoaOfO7ANuRV">请选择一项</div>
+</div>
+
+    <button type="submit" class="btn" id="submitBtn" data-page-node-id="aKlXJfltCbMxEciIx4tmvL">查看我的AI搜索可见度评分</button>
+    <div class="q-pre-cta" data-page-node-id="563JjzeyqbY9YV5LUS3L6E">📊 <b data-page-node-id="u9nC8HfqqOBqADxSJ3IZaK">3 分钟</b>看 AI 怎么认识你的企业</div>
+    <div class="foot" data-page-node-id="sMDFBU3YGduXOzXgLWvoqK">本测试衡量企业当前的 AI 搜索可见度基础成熟度，非 AI 推荐概率</div>
+  </form>
+
+  <!-- 结果区（前端 JS 注入 calc.js 渲染结果） -->
+  <div id="result" class="card" data-page-node-id="KX4qdkE39FfBnFrXjVhpM1"></div>
+</div>
+
+<script>
+/* ===== calc.js 内联（纯前端算分，单文件自包含）===== */
+// calc.js —— 纯前端复刻 server.py 的算分 + 分级 + 四分类短板文案 + 结果页渲染
+// 无后端依赖：浏览器内直接收集表单 → 算分 → 渲染结果页。
+// 复刻口径与 server.py V0.31.1 完全一致（每题 1-5 分、5 模块满分 100、V0.27 四分类 + V0.29 修正）。
+
+// 飞书多维表格「表单视图」公开链接（任务②建好后填入；留空则仅显示「复制结果」兜底）
+const FEISHU_FORM_URL = "";
+
+// ===== 模块定义（与 server.py MODS 一致）=====
+const MODS = {
+  "企业实体信息": { keys: ["Q06", "Q07", "Q08", "Q09"], max: 20,
+    good_tip: "主体、工商、官网信息清晰，AI 在识别「这是哪家公司」时不容易出错，这是后续所有 GEO 动作的地基。" },
+  "产品信息":     { keys: ["Q10", "Q11", "Q12", "Q13"], max: 25,
+    good_tip: "产品名称、型号、卖点和客户案例较完整，AI 在回答用户「这家卖什么」时信息充分，利于被精准推荐。" },
+  "内容资产":     { keys: ["Q14", "Q15", "Q16", "Q17"], max: 20,
+    good_tip: "官网 / 公众号 / 小红书 / 知乎等平台有持续内容沉淀，AI 有素材可引用，企业信息更容易被检索到。" },
+  "AI可理解性":   { keys: ["Q18", "Q19", "Q20", "Q21"], max: 20,
+    good_tip: "结构化数据、FAQ、术语解释做得好，AI 能直接读懂你的业务，降低被误解概率。" },
+  "AI搜索验证":   { keys: ["Q22", "Q23", "Q24", "Q25"], max: 15,
+    good_tip: "已在多个 AI 引擎实测过企业的出现情况，能主动发现错误认知并纠错，形成正向循环。" },
+};
+
+// 弱项模块的短板解读（动态取 minmod 用）
+const MOD_BAD_TIP = {
+  "企业实体信息": "主体关系、工商行业归类或官网信息不清晰，AI 很可能把你的企业认错行业或张冠李戴。优先补齐官网与工商主体一致性。",
+  "产品信息": "产品信息分散或缺核心卖点，AI 搜到你也说不清你卖什么。优先把产品名 / 型号 / 差异化卖点沉淀到官网和公众号头条。",
+  "内容资产": "各平台内容资产薄弱，AI 缺可引用的信息源，这是「搜不到你」的主因。优先在高权重平台（官网、公众号、知乎）补基础介绍内容。",
+  "AI可理解性": "缺少结构化数据与 FAQ，AI 只能靠猜测理解你，极易产生错误认知。优先补充 JSON-LD 结构化数据与产品 FAQ 页。",
+  "AI搜索验证": "没验证过 AI 实际怎么回答你的企业，等于「盲飞」。建议用主流 AI 引擎实测一次，记录错误认知再针对性补内容。",
+};
+
+// 整数四舍五入（与 int(x+0.5) half-up 等价，分值非负）
+function _r(x) { return Math.round(x); }
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ===== 算分（复刻 server.py calc_score）=====
+function calcScore(raw) {
+  const m = {};
+  for (const [name, cfg] of Object.entries(MODS)) {
+    const s = cfg.keys.reduce((a, k) => a + (Number(raw[k]) || 0), 0);
+    if (name === "产品信息" || name === "AI搜索验证") m[name] = s / 20.0 * cfg.max;
+    else m[name] = s;
+  }
+  const total = _r(Object.values(m).reduce((a, b) => a + b, 0));
+  let level, sub;
+  if (total <= 40) {
+    level = "AI搜索基础薄弱";
+    sub = "企业目前在线信息基础较弱，AI 对企业的理解可能不完整。建议优先完善企业实体信息、产品信息和基础内容。";
+  } else if (total <= 60) {
+    level = "AI搜索起步阶段";
+    sub = "企业已经拥有一定线上信息，但信息完整性和统一性仍有提升空间。建议重点补充产品信息、案例和专业内容。";
+  } else if (total <= 80) {
+    level = "AI搜索优化阶段";
+    sub = "企业已经具备一定的 AI 搜索基础，可以进一步优化信息结构和内容资产。建议重点进行 GEO 系统优化。";
+  } else {
+    level = "AI搜索领先阶段";
+    sub = "企业已经拥有较完整的线上信息基础和内容资产。建议进一步建立持续性的 GEO 优化机制，提高品牌在 AI 搜索场景中的可见度。";
+  }
+  const rates = {};
+  for (const k in m) rates[k] = m[k] / MODS[k].max;
+  // 与 Python max/min(others, key=rates) 一致：并列极值取第一个（插入序）
+  const rkeys = Object.keys(rates);
+  const maxmod = rkeys.reduce((best, k) => rates[k] > rates[best] ? k : best, rkeys[0]);
+  const others = rkeys.filter(k => k !== maxmod);
+  const minmod = others.length ? others.reduce((best, k) => rates[k] < rates[best] ? k : best, others[0]) : maxmod;
+  return { total, m, level, sub, maxmod, minmod, rates };
+}
+
+// ===== 结果页内部 HTML（复刻 server.py render_result_html，不含 doctype/head/style）=====
+function renderResultInner(base, raw, missing) {
+  const { total, m, level, sub, maxmod, minmod } = calcScore(raw);
+
+  // 模块进度条
+  let mod_rows = "";
+  for (const [name, v] of Object.entries(m)) {
+    const mx = MODS[name].max;
+    const cls = "mod " + (name === maxmod ? "hl-good" : (name === minmod ? "hl-bad" : ""));
+    const pct = Math.max(0, Math.min(100, Math.round(v / mx * 100)));
+    mod_rows += `<div class="${cls}"><div class="mn">${esc(name)}</div><div class="mbar"><span style="width:${pct}%"></span></div><div class="mv">${_r(v)}/${mx}</div></div>`;
+  }
+
+  let missing_tip = "";
+  if (missing && missing.length) {
+    missing_tip = `<div class="warn">有 ${missing.length} 道题未作答（已按 0 分计），分数为参考值。请返回补全后重新提交。</div>`;
+  }
+
+  // 四分类文案：从 raw 重新归一化算 rates（与 server.py 一致口径），用于分支判断
+  const norm_mods = {};
+  for (const [_n, _c] of Object.entries(MODS)) {
+    const _s = _c.keys.reduce((a, k) => a + (Number(raw[k]) || 0), 0);
+    norm_mods[_n] = (_n === "产品信息" || _n === "AI搜索验证") ? _s / 20.0 * _c.max : _s;
+  }
+  const rates = {};
+  for (const k in norm_mods) if (MODS[k].max) rates[k] = norm_mods[k] / MODS[k].max;
+  const rvals = Object.values(rates);
+  const spread = rvals.length ? (Math.max(...rvals) - Math.min(...rvals)) : 0;
+  const max_rate = rvals.length ? Math.max(...rvals) : 1;
+  const rkeys2 = Object.keys(rates);
+  const maxmod2 = rkeys2.reduce((best, k) => rates[k] > rates[best] ? k : best, rkeys2[0]);
+  const others2 = rkeys2.filter(k => k !== maxmod2);
+  const minmod2 = others2.length ? others2.reduce((best, k) => rates[k] < rates[best] ? k : best, others2[0]) : maxmod2;
+  const min_rate = rates[minmod2] != null ? rates[minmod2] : 1;
+  const base_info_mods = ["企业实体信息", "产品信息", "内容资产", "AI可理解性"];
+
+  let good, bad;
+  if (max_rate <= 0.4) {
+    // 第 1 类：全面薄弱
+    const by_rate = Object.entries(rates).sort((a, b) => a[1] - b[1]);
+    const priority = by_rate.map(([k, v]) => `${k}（${Math.round(v * 100)}%）`).join(" → ");
+    const lowest_rate = Math.min(...rvals);
+    let cands = Object.keys(rates).filter(k => Math.abs(rates[k] - lowest_rate) < 0.02 && k !== maxmod2);
+    if (!cands.length) cands = others2.length ? others2 : [minmod2];
+    const start_mod = base_info_mods.find(x => cands.includes(x)) || cands[0];
+    if (spread < 0.02) {
+      good = `5 个模块得分率都在 ${Math.round(max_rate * 100)}% 左右，目前还没有相对突出的模块：${MODS[maxmod2].good_tip}`;
+      bad = `5 个模块得分率都在 4 成以下（${priority}），说明企业 AI 搜索基础尚处起步阶段，且各模块之间没有明显的强弱差异。GEO 的正确顺序是先补基础信息、再做 AI 搜索验证，建议从「${start_mod}」开始，先把它做成能被 AI 引用的基础信息源。`;
+    } else {
+      good = `5 个模块普遍偏低，但「${maxmod2}」相对最不薄弱（${_r(m[maxmod2])}/${MODS[maxmod2].max}，得分率约 ${Math.round(max_rate * 100)}%）：${MODS[maxmod2].good_tip}`;
+      bad = `5 个模块得分率都在 4 成以下（${priority}），说明企业 AI 搜索基础尚处起步阶段。GEO 的正确顺序是先补基础信息、再做 AI 搜索验证。建议按上述优先级逐项补齐：「${start_mod}」是最迫切的起步点。`;
+    }
+  } else if (spread < 0.05 && max_rate >= 0.8) {
+    // 第 2 类：均衡高分
+    good = `5 个模块得分率都在 80% 以上（整体约 ${Math.round(max_rate * 100)}%），整体 GEO 基础扎实：${MODS[maxmod2].good_tip}`;
+    bad = `5 个模块得分率较为接近（最低约 ${Math.round(min_rate * 100)}%），暂无明显短板。建议持续补充业务案例与差异化内容，进一步加深 AI 对企业业务的理解。`;
+  } else if (spread < 0.05 && min_rate >= 0.4) {
+    // 第 3 类：均衡中等
+    good = `5 个模块接近，整体处于中等水平（约 ${Math.round(max_rate * 100)}%）：均衡但尚未出现亮点模块。建议集中资源突破一项，先把其中任何一个拉到 80% 以上。`;
+    let range_txt;
+    if (Math.abs(max_rate - min_rate) < 0.005) range_txt = `整体约 ${Math.round(max_rate * 100)}%`;
+    else range_txt = `整体 ${Math.round(min_rate * 100)}%~${Math.round(max_rate * 100)}%`;
+    bad = `5 个模块得分较为接近（${range_txt}），无突出短板但也缺亮点。建议选最容易提升的一项先突破，再带动整体。`;
+  } else {
+    // 第 4 类：模块差异化
+    bad = `你的「${minmod2}」相对不足（${_r(m[minmod2])}/${MODS[minmod2].max}）：${MOD_BAD_TIP[minmod2] || "这是目前影响 AI 理解企业的重要因素之一，建议补齐相关基础信息。"}`;
+    good = `你的「${maxmod2}」基础较好（${_r(m[maxmod2])}/${MODS[maxmod2].max}）：${MODS[maxmod2].good_tip}`;
+  }
+
+  // 付费 CTA（固定，复刻 server.py cta_block）
+  const cta_block = `
+  <div class="lead-block">
+    <div class="cta5-t1">想知道AI为什么还不能准确认识你的企业？</div>
+    <div class="cta5-t2">你的本次测试主要反映企业目前的AI搜索基础情况。<br>如果希望进一步了解：</div>
+    <ol class="cta5-list">
+      <li>AI是否能够正确识别你的企业</li>
+      <li>AI是否能够准确理解你的产品</li>
+      <li>AI是否存在错误或过时信息</li>
+      <li>企业在哪些平台存在信息缺口</li>
+      <li>哪些内容最值得优先补充</li>
+    </ol>
+    <div class="cta5-prod">
+      <div class="cta5-prod-name">《企业GEO深度诊断》</div>
+      <div class="cta5-price">9.9元 / 次</div>
+      <div class="cta5-desc">针对你的企业进行实际AI搜索验证，并整理一份GEO问题诊断。</div>
+    </div>
+    <a class="cta5-btn" href="#wx">【添加微信，申请GEO深度诊断 →】</a>
+    <div class="wx-zone" id="wx">
+      <div class="wx-t">添加微信，发送「GEO诊断」</div>
+      <div class="wx-id">wuxianruju</div>
+      <div class="wx-tip">长按复制上方微信号 → 好友申请备注「GEO诊断」 → 微信内转账或发红包 9.9 元 → 我收到后发完整《企业GEO深度诊断》</div>
+    </div>
+  </div>`;
+
+  // 保存结果（跳飞书表单视图）+ 复制结果兜底
+  const save_block = `
+  <div class="save-zone">
+    ${FEISHU_FORM_URL
+      ? `<a class="btn-save" href="${FEISHU_FORM_URL}" target="_blank" rel="noopener">📥 保存我的测试结果到企业档案</a>`
+      : `<div class="save-tip">（存档通道配置中，可先复制结果发给顾问）</div>`}
+    <button class="btn-copy" type="button" onclick="copyResult()">📋 复制结果发给顾问</button>
+  </div>`;
+
+  return `
+    <div class="h">企业 AI 搜索可见度测试结果</div>
+    <div class="score-big">
+      <div class="num">${total}</div>
+      <div class="lv">${esc(level)}</div>
+      <div class="sub">${esc(sub)}</div>
+    </div>
+    ${missing_tip}
+    <div class="sec-title">各模块得分</div>
+    ${mod_rows}
+    <div class="sec-title">你的优势</div>
+    <div class="note">${esc(good)}</div>
+    <div class="sec-title">当前主要问题</div>
+    <div class="note">${esc(bad)}</div>
+    ${cta_block}
+    ${save_block}
+    <a class="btn" href="javascript:location.reload()">再测一次</a>
+    <div class="foot">本测试衡量企业当前的 AI 搜索可见度基础成熟度，不等同于 AI 收录或推荐结果</div>
+  `;
+}
+
+// 暴露到全局（index.html 的 inline script 调用）
+window.GEO = { calcScore, renderResultInner, MODS };
+
+</script>
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+  // 必填校验（品牌名称允许「无」/「暂无品牌」/企业名称本身，仅需非空）
+  const required = [
+    ["企业名称", "err-企业名称"],
+    ["品牌名称", "err-品牌名称"],
+    ["企业官网", "err-企业官网"],
+    ["企业主要产品/服务", "err-企业主要产品/服务"],
+    ["所属行业", "err-所属行业"],
+  ];
+  let ok = true;
+  for (const [id, errId] of required) {
+    const el = document.getElementById(id);
+    const val = (el.value || "").trim();
+    const err = document.getElementById(errId);
+    if (!val) {
+      ok = false;
+      if (err) err.style.display = "block";
+      el.style.borderColor = "#f5483b";
+    } else {
+      if (err) err.style.display = "none";
+      el.style.borderColor = "";
+    }
+  }
+  if (!ok) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+
+  // 收集基础信息
+  const base = {
+    企业名称: document.getElementById("企业名称").value.trim(),
+    品牌名称: document.getElementById("品牌名称").value.trim(),
+    企业官网: document.getElementById("企业官网").value.trim(),
+    "企业主要产品/服务": document.getElementById("企业主要产品/服务").value.trim(),
+    所属行业: document.getElementById("所属行业").value,
+    "所在城市/主要经营区域": document.getElementById("所在城市/主要经营区域").value.trim(),
+  };
+
+  // 收集 20 题（Q06-Q25）
+  const raw = {};
+  const missing = [];
+  for (let i = 6; i <= 25; i++) {
+    const q = "Q" + String(i).padStart(2, "0");
+    const chk = document.querySelector('input[name="q-' + q + '"]:checked');
+    if (chk) raw[q] = Number(chk.value);
+    else missing.push(q);
+  }
+
+  // 算分 + 渲染结果页
+  const html = window.GEO.renderResultInner(base, raw, missing);
+  const result = document.getElementById("result");
+  result.innerHTML = html;
+  result.style.display = "block";
+  document.getElementById("form").style.display = "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 复制结果发给顾问（兜底存档）
+window.copyResult = function () {
+  const txt = document.getElementById("result").innerText;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () { alert("已复制，可发给顾问"); })
+      .catch(function () { fallbackCopy(txt); });
+  } else {
+    fallbackCopy(txt);
+  }
+};
+function fallbackCopy(txt) {
+  const ta = document.createElement("textarea");
+  ta.value = txt; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); alert("已复制，可发给顾问"); }
+  catch (e) { alert("复制失败，请手动长按选择文本复制"); }
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>
